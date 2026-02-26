@@ -1,0 +1,211 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { usePlayerStore, Gender, Style } from "../store/playerStore";
+import { generateCharacterName, generateAvatar } from "../services/ai";
+import { motion } from "motion/react";
+import { Loader2, ArrowRight, UserPlus, Sparkles } from "lucide-react";
+
+const STYLES: Style[] = [
+  "Фотореализм",
+  "Хоррор",
+  "Стимпанк",
+  "Киберпанк",
+  "Аниме",
+  "Постсоветский",
+  "Русская сказка",
+  "2D мультфильм",
+  "Фентези деревня",
+];
+
+const WISHES_OPTIONS = [
+  "Длинные когти",
+  "Светящиеся глаза",
+  "Рваная пижама",
+  "Огромные зубы",
+  "Лысина",
+  "Борода до колен",
+  "Много глаз",
+  "Щупальца вместо рук",
+];
+
+export default function CharacterCreate() {
+  const navigate = useNavigate();
+  const setCharacter = usePlayerStore((state) => state.setCharacter);
+
+  const [gender, setGender] = useState<Gender | null>(null);
+  const [style, setStyle] = useState<Style | null>(null);
+  const [wishes, setWishes] = useState<string[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [step, setStep] = useState(1);
+
+  const toggleWish = (wish: string) => {
+    if (wishes.includes(wish)) {
+      setWishes(wishes.filter((w) => w !== wish));
+    } else if (wishes.length < 4) {
+      setWishes([...wishes, wish]);
+    }
+  };
+
+  const handleGenerate = async () => {
+    if (!gender || !style) return;
+    setIsGenerating(true);
+    try {
+      const name = await generateCharacterName(gender, style);
+      const avatarUrl = await generateAvatar(gender, style, wishes);
+
+      setCharacter({
+        name,
+        gender,
+        style,
+        wishes,
+        avatarUrl: avatarUrl || "https://picsum.photos/seed/babai/400/400", // fallback
+        telekinesisLevel: 1,
+      });
+      navigate("/hub");
+    } catch (error) {
+      console.error(error);
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 50 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -50 }}
+      className="flex-1 flex flex-col p-6 bg-neutral-950 text-neutral-200"
+    >
+      <div className="mb-8">
+        <h2
+          className="text-3xl font-black text-red-600 uppercase tracking-tighter"
+          style={{ fontFamily: "'Playfair Display', serif" }}
+        >
+          Создание Духа
+        </h2>
+        <p className="text-neutral-500 text-sm font-mono mt-1">
+          Шаг {step} из 3
+        </p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto pb-20">
+        {step === 1 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-6"
+          >
+            <h3 className="text-xl font-bold text-white">Кто ты?</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => {
+                  setGender("Бабай");
+                  setStep(2);
+                }}
+                className={`p-6 rounded-2xl border-2 flex flex-col items-center gap-4 transition-all ${gender === "Бабай" ? "border-red-600 bg-red-900/20" : "border-neutral-800 bg-neutral-900 hover:border-neutral-600"}`}
+              >
+                <div className="text-4xl">👴</div>
+                <span className="font-bold text-lg">Бабай</span>
+                <span className="text-xs text-neutral-500 text-center">
+                  Мужской дух
+                </span>
+              </button>
+              <button
+                onClick={() => {
+                  setGender("Бабайка");
+                  setStep(2);
+                }}
+                className={`p-6 rounded-2xl border-2 flex flex-col items-center gap-4 transition-all ${gender === "Бабайка" ? "border-red-600 bg-red-900/20" : "border-neutral-800 bg-neutral-900 hover:border-neutral-600"}`}
+              >
+                <div className="text-4xl">👵</div>
+                <span className="font-bold text-lg">Бабайка</span>
+                <span className="text-xs text-neutral-500 text-center">
+                  Женский дух
+                </span>
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {step === 2 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-6"
+          >
+            <h3 className="text-xl font-bold text-white">Выбери стиль</h3>
+            <p className="text-xs text-neutral-400">
+              Стиль выбирается 1 раз и навсегда. Влияет на генерацию и общение.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {STYLES.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStyle(s)}
+                  className={`p-3 rounded-xl border text-sm font-medium transition-all ${style === s ? "border-red-600 bg-red-900/30 text-white" : "border-neutral-800 bg-neutral-900 text-neutral-400 hover:bg-neutral-800"}`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+            <button
+              disabled={!style}
+              onClick={() => setStep(3)}
+              className="w-full mt-6 py-4 bg-white text-black rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Далее <ArrowRight size={18} />
+            </button>
+          </motion.div>
+        )}
+
+        {step === 3 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-6"
+          >
+            <h3 className="text-xl font-bold text-white">Особые приметы</h3>
+            <p className="text-xs text-neutral-400">
+              Выбери до 4 пожеланий для внешности.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {WISHES_OPTIONS.map((w) => {
+                const isSelected = wishes.includes(w);
+                const isDisabled = !isSelected && wishes.length >= 4;
+                return (
+                  <button
+                    key={w}
+                    disabled={isDisabled}
+                    onClick={() => toggleWish(w)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${isSelected ? "border-red-500 bg-red-900/40 text-red-200" : "border-neutral-700 bg-neutral-800 text-neutral-400 hover:bg-neutral-700"} ${isDisabled ? "opacity-30 cursor-not-allowed" : ""}`}
+                  >
+                    {w}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="pt-8">
+              <button
+                disabled={isGenerating}
+                onClick={handleGenerate}
+                className="w-full py-4 bg-red-700 hover:bg-red-600 text-white rounded-xl font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.4)] disabled:opacity-70 disabled:cursor-wait"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    ПРИЗЫВ ДУХА...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={20} />
+                    СОЗДАТЬ
+                  </>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </motion.div>
+  );
+}

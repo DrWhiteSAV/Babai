@@ -1,0 +1,48 @@
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { usePlayerStore } from "./store/playerStore";
+import { useEffect } from "react";
+
+// Pages
+import Home from "./pages/Home";
+import CharacterCreate from "./pages/CharacterCreate";
+import GameHub from "./pages/GameHub";
+import Game from "./pages/Game";
+import Shop from "./pages/Shop";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
+
+export default function App() {
+  const { updateEnergy } = usePlayerStore();
+
+  useEffect(() => {
+    // Update energy every minute
+    const interval = setInterval(() => {
+      updateEnergy();
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [updateEnergy]);
+
+  return (
+    <Router>
+      <div className="min-h-screen bg-neutral-950 text-neutral-100 font-sans selection:bg-red-900 selection:text-white">
+        <div className="max-w-md mx-auto min-h-screen bg-neutral-900 shadow-2xl relative overflow-hidden flex flex-col">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/create" element={<CharacterCreate />} />
+            <Route path="/hub" element={<GameHub />} />
+            <Route path="/game" element={<Game />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
+  );
+}
