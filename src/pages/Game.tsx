@@ -7,11 +7,6 @@ import {
   generateBackgroundImage,
   generateSpookyVoice,
 } from "../services/ai";
-import {
-  startBackgroundMusic,
-  stopBackgroundMusic,
-  setMusicVolume,
-} from "../services/audio";
 import { playScreamer, playSuccess, playClick } from "../services/sfx";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -33,7 +28,7 @@ interface Scenario {
 
 export default function Game() {
   const navigate = useNavigate();
-  const { character, fear, energy, useEnergy, addFear, settings } =
+  const { character, fear, energy, useEnergy, addFear, settings, gallery, addToGallery } =
     usePlayerStore();
 
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
@@ -61,7 +56,6 @@ export default function Game() {
   useEffect(() => {
     if (!character) navigate("/");
     return () => {
-      stopBackgroundMusic();
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
@@ -69,7 +63,6 @@ export default function Game() {
   }, [character, navigate]);
 
   useEffect(() => {
-    setMusicVolume(settings.musicVolume);
     if (audioRef.current) {
       audioRef.current.volume = settings.musicVolume / 100;
     }
@@ -88,8 +81,6 @@ export default function Game() {
       return;
     }
 
-    startBackgroundMusic(settings.musicVolume);
-
     setDifficulty(diff);
     setMaxStages(
       diff === "Сложная" ? 15 : diff === "Невозможная" ? 45 : Infinity,
@@ -106,9 +97,19 @@ export default function Game() {
     // Generate background image on stage 1 or every 5th stage
     if (currentStage === 1 || currentStage % 5 === 0) {
       if (character) {
-        generateBackgroundImage(currentStage, character.style).then((newBg) => {
-          if (newBg) setBgImage(newBg);
-        });
+        if (gallery.length >= 10) {
+          // Reuse existing images
+          const randomBg = gallery[Math.floor(Math.random() * gallery.length)];
+          setBgImage(randomBg);
+        } else {
+          // Generate new
+          generateBackgroundImage(currentStage, character.style).then((newBg) => {
+            if (newBg) {
+              setBgImage(newBg);
+              addToGallery(newBg);
+            }
+          });
+        }
       }
     }
 

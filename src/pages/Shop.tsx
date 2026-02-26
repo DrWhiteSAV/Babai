@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlayerStore } from "../store/playerStore";
 import { motion } from "motion/react";
-import { ShoppingCart, ArrowLeft, Skull, Zap } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Skull, Zap, Loader2 } from "lucide-react";
+import { editAvatarWithItem } from "../services/geminiService";
 
 const SHOP_ITEMS = [
   {
@@ -43,19 +45,37 @@ const SHOP_ITEMS = [
 
 export default function Shop() {
   const navigate = useNavigate();
-  const { fear, inventory, buyItem, upgradeTelekinesis, character } =
+  const { fear, inventory, buyItem, upgradeTelekinesis, character, updateCharacter, addToGallery } =
     usePlayerStore();
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleBuy = (item: any) => {
+  const handleBuy = async (item: any) => {
     if (inventory.includes(item.id)) {
       alert("Уже куплено!");
       return;
     }
-    if (buyItem(item.id, item.cost)) {
-      alert(`Вы купили: ${item.name}`);
-    } else {
+    
+    if (fear < item.cost) {
       alert("Недостаточно страха!");
+      return;
     }
+
+    setIsProcessing(true);
+    
+    // Save current to gallery before changing
+    if (character?.avatarUrl) {
+      addToGallery(character.avatarUrl);
+    }
+
+    const success = buyItem(item.id, item.cost);
+    if (success && character) {
+      // Edit avatar
+      const newAvatar = await editAvatarWithItem(character.avatarUrl, item.name);
+      updateCharacter({ avatarUrl: newAvatar });
+      alert(`Вы купили: ${item.name}. Внешность обновлена!`);
+    }
+    
+    setIsProcessing(false);
   };
 
   const handleUpgrade = () => {
@@ -155,7 +175,7 @@ export default function Shop() {
                     </div>
                   </div>
                   <button
-                    disabled={isOwned}
+                    disabled={isOwned || isProcessing}
                     onClick={() => handleBuy(item)}
                     className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 ${
                       isOwned
@@ -165,6 +185,8 @@ export default function Shop() {
                   >
                     {isOwned ? (
                       "Куплено"
+                    ) : isProcessing ? (
+                      <Loader2 size={14} className="animate-spin" />
                     ) : (
                       <>
                         <Skull size={14} /> {item.cost}

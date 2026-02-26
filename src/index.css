@@ -32,9 +32,9 @@
   height: 100%;
   background-image: url('https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog1.png');
   background-size: 50% 100%;
-  opacity: 0.6;
-  filter: brightness(0);
-  animation: fog 60s linear infinite;
+  opacity: 0.8;
+  filter: brightness(0) drop-shadow(0 0 10px rgba(0,0,0,0.8));
+  animation: fog 40s linear infinite;
 }
 
 .fog-layer-2 {
@@ -45,11 +45,37 @@
   height: 100%;
   background-image: url('https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog2.png');
   background-size: 50% 100%;
-  opacity: 0.4;
-  filter: brightness(0);
-  animation: fog 40s linear infinite;
+  opacity: 0.6;
+  filter: brightness(0) drop-shadow(0 0 10px rgba(0,0,0,0.8));
+  animation: fog 30s linear infinite;
 }
 
 .lightning-btn {
   animation: lightning 7s infinite;
+}
+
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.liquid-glass-red {
+  background: rgba(220, 38, 38, 0.15);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(220, 38, 38, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.btn-small button, button.btn-small {
+  padding: 0.5rem 1rem !important;
+  font-size: 0.875rem !important;
+}
+
+.btn-large button, button.btn-large {
+  padding: 1.5rem 2rem !important;
+  font-size: 1.25rem !important;
 }

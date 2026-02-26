@@ -113,7 +113,7 @@ export default function GameHub() {
             </span>
           </button>
           <button
-            onClick={() => alert("Мультиплеер в разработке")}
+            onClick={() => navigate("/friends")}
             className="py-4 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-2xl font-medium transition-all active:scale-95 flex flex-col items-center justify-center gap-2 border border-neutral-700"
           >
             <Users size={20} className="text-neutral-400" />

@@ -164,8 +164,12 @@ export async function generateBackgroundImage(
       }
     }
     return "";
-  } catch (e) {
-    console.error(e);
+  } catch (e: any) {
+    if (e?.status === 429 || e?.message?.includes("429") || e?.message?.includes("quota")) {
+      console.warn("Image generation Rate limit exceeded.");
+    } else {
+      console.error("Image generation error:", e);
+    }
     return "";
   }
 }
