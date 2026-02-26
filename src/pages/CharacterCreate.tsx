@@ -73,8 +73,27 @@ export default function CharacterCreate() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col p-6 bg-neutral-950 text-neutral-200"
+      className="flex-1 flex flex-col p-6 bg-neutral-950 text-neutral-200 relative"
     >
+      {isGenerating && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-neutral-950/90 backdrop-blur-sm"
+        >
+          <motion.img 
+            animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+            src="https://storage.googleapis.com/aistudio-janus-prod-appspot-com/user_content/images/409392c6-30c1-4b10-a29d-421711739cda.png"
+            alt="Loading"
+            className="w-64 mb-8 drop-shadow-[0_0_20px_rgba(220,38,38,0.6)]"
+          />
+          <p className="font-mono text-lg uppercase tracking-widest text-red-500 animate-pulse font-bold">
+            Призыв духа...
+          </p>
+        </motion.div>
+      )}
+
       <div className="mb-8">
         <h2
           className="text-3xl font-black text-red-600 uppercase tracking-tighter"

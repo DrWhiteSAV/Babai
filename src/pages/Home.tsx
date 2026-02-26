@@ -24,24 +24,15 @@ export default function Home() {
     >
       <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/babai-bg/1080/1920?blur=4')] bg-cover bg-center opacity-20 pointer-events-none mix-blend-overlay" />
 
-      <div className="relative z-10 text-center mb-12">
-        <motion.h1
+      <div className="relative z-10 text-center mb-12 flex flex-col items-center">
+        <motion.img 
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, type: "spring" }}
-          className="text-7xl font-black tracking-tighter text-red-600 drop-shadow-[0_0_15px_rgba(220,38,38,0.8)] uppercase"
-          style={{ fontFamily: "'Playfair Display', serif" }}
-        >
-          Бабай
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-neutral-400 mt-2 font-mono text-sm tracking-widest uppercase"
-        >
-          Bab-AI
-        </motion.p>
+          src="https://storage.googleapis.com/aistudio-janus-prod-appspot-com/user_content/images/737d2f9d-161b-4b2a-89a1-09d57a41c107.png"
+          alt="Бабай Bab-AI"
+          className="w-72 md:w-80 drop-shadow-[0_0_25px_rgba(220,38,38,0.5)]"
+        />
       </div>
 
       <div className="w-full max-w-xs space-y-4 relative z-10">

@@ -338,8 +338,14 @@ export default function Game() {
               exit={{ opacity: 0 }}
               className="flex-1 flex flex-col items-center justify-center text-neutral-500"
             >
-              <Loader2 className="animate-spin mb-4" size={32} />
-              <p className="font-mono text-sm uppercase tracking-widest">
+              <motion.img 
+                animate={{ scale: [1, 1.05, 1], opacity: [0.8, 1, 0.8] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                src="https://storage.googleapis.com/aistudio-janus-prod-appspot-com/user_content/images/409392c6-30c1-4b10-a29d-421711739cda.png"
+                alt="Loading"
+                className="w-48 mb-6 drop-shadow-[0_0_15px_rgba(220,38,38,0.5)]"
+              />
+              <p className="font-mono text-sm uppercase tracking-widest text-red-500 animate-pulse font-bold">
                 Генерация кошмара...
               </p>
             </motion.div>
