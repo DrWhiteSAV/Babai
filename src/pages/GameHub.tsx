@@ -40,9 +40,9 @@ export default function GameHub() {
         <div className="flex gap-3">
           <button
             onClick={() => navigate("/profile")}
-            className="p-2 hover:bg-neutral-800 rounded-full transition-colors text-neutral-400 hover:text-white"
+            className="p-2 hover:bg-neutral-800 rounded-full transition-colors flex items-center justify-center"
           >
-            <User size={20} />
+            <img src={character.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-neutral-500" />
           </button>
           <button
             onClick={() => navigate("/settings")}

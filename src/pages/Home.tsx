@@ -29,9 +29,11 @@ export default function Home() {
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, type: "spring" }}
-          src="https://storage.googleapis.com/aistudio-janus-prod-appspot-com/user_content/images/737d2f9d-161b-4b2a-89a1-09d57a41c107.png"
+          src="https://i.ibb.co/BVgY7XrT/babai.png"
           alt="Бабай Bab-AI"
           className="w-72 md:w-80 drop-shadow-[0_0_25px_rgba(220,38,38,0.5)]"
+          fetchPriority="high"
+          loading="eager"
         />
       </div>
 
@@ -50,7 +52,7 @@ export default function Home() {
               onClick={() => navigate("/profile")}
               className="py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-xl font-medium transition-all active:scale-95 flex items-center justify-center gap-2 border border-neutral-700"
             >
-              <User size={18} />
+              <img src={character.avatarUrl} alt="Avatar" className="w-5 h-5 rounded-full object-cover border border-neutral-500" />
               Профиль
             </button>
             <button

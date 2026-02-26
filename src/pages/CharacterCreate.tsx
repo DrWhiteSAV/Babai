@@ -84,7 +84,7 @@ export default function CharacterCreate() {
           <motion.img 
             animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
             transition={{ repeat: Infinity, duration: 1.5 }}
-            src="https://storage.googleapis.com/aistudio-janus-prod-appspot-com/user_content/images/409392c6-30c1-4b10-a29d-421711739cda.png"
+            src="https://i.ibb.co/BVgY7XrT/babai.png"
             alt="Loading"
             className="w-64 mb-8 drop-shadow-[0_0_20px_rgba(220,38,38,0.6)]"
           />

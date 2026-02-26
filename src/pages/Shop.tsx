@@ -91,6 +91,15 @@ export default function Shop() {
       </header>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8">
+        {/* Shop Logo */}
+        <div className="flex justify-center mb-6">
+          <img 
+            src="https://i.ibb.co/pvJ73kxN/babai2.png" 
+            alt="Shop Logo" 
+            className="w-48 drop-shadow-[0_0_15px_rgba(220,38,38,0.4)]"
+          />
+        </div>
+
         {/* Telekinesis Upgrade */}
         <section>
           <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2">

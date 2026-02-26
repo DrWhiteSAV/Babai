@@ -45,6 +45,7 @@ export default function Game() {
   const [score, setScore] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
   const [showScreamer, setShowScreamer] = useState(false);
+  const [showSuccessAvatar, setShowSuccessAvatar] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -149,6 +150,9 @@ export default function Game() {
       addFear(1);
       setScore((s) => s + 1);
       playSuccess(settings.musicVolume);
+      setShowSuccessAvatar(true);
+      await new Promise((r) => setTimeout(r, 1000));
+      setShowSuccessAvatar(false);
     } else {
       setShowScreamer(true);
       playScreamer(settings.musicVolume);
@@ -292,6 +296,20 @@ export default function Game() {
             <Skull size={250} className="text-black animate-ping" />
           </motion.div>
         )}
+        {showSuccessAvatar && character && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 1.2 }}
+            className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none"
+          >
+            <img 
+              src={character.avatarUrl} 
+              alt="Success" 
+              className="w-64 h-64 rounded-full object-cover border-4 border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.8)]" 
+            />
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <audio ref={audioRef} className="hidden" />
@@ -341,7 +359,7 @@ export default function Game() {
               <motion.img 
                 animate={{ scale: [1, 1.05, 1], opacity: [0.8, 1, 0.8] }}
                 transition={{ repeat: Infinity, duration: 2 }}
-                src="https://storage.googleapis.com/aistudio-janus-prod-appspot-com/user_content/images/409392c6-30c1-4b10-a29d-421711739cda.png"
+                src="https://i.ibb.co/BVgY7XrT/babai.png"
                 alt="Loading"
                 className="w-48 mb-6 drop-shadow-[0_0_15px_rgba(220,38,38,0.5)]"
               />
