@@ -36,8 +36,13 @@ export default function Settings() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col bg-neutral-950 text-neutral-200"
+      className="flex-1 flex flex-col bg-neutral-950 text-neutral-200 relative overflow-hidden"
     >
+      <div className="fog-container">
+        <div className="fog-layer"></div>
+        <div className="fog-layer-2"></div>
+      </div>
+
       <header className="flex items-center justify-between p-4 bg-neutral-900 border-b border-neutral-800 sticky top-0 z-20">
         <button
           onClick={() => navigate("/hub")}
@@ -138,6 +143,14 @@ export default function Settings() {
             СБРОСИТЬ ПРОГРЕСС
           </button>
         </section>
+
+        <div className="flex justify-center pt-8 pb-4 opacity-50">
+          <img 
+            src="https://i.ibb.co/BVgY7XrT/babai.png" 
+            alt="Bab-AI" 
+            className="w-24 grayscale"
+          />
+        </div>
       </div>
     </motion.div>
   );

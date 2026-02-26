@@ -62,6 +62,9 @@ export default function Game() {
     if (!character) navigate("/");
     return () => {
       stopBackgroundMusic();
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
     };
   }, [character, navigate]);
 
@@ -137,6 +140,15 @@ export default function Game() {
           audioRef.current
             .play()
             .catch((e) => console.log("Audio play blocked", e));
+        } else {
+          // Fallback to browser TTS if API fails (e.g., rate limit)
+          if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(newScenario.text);
+            utterance.lang = 'ru-RU';
+            utterance.pitch = 0.5; // Make it sound a bit deeper/spookier
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+          }
         }
       });
     }
@@ -145,6 +157,10 @@ export default function Game() {
 
   const handleOptionSelect = async (index: number) => {
     if (!scenario) return;
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
 
     if (index === scenario.correctAnswer) {
       addFear(1);
@@ -194,6 +210,11 @@ export default function Game() {
   if (isGameOver) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 bg-neutral-950 text-white text-center">
+        <img 
+          src="https://i.ibb.co/BVgY7XrT/babai.png" 
+          alt="Bab-AI" 
+          className="w-48 mb-6 drop-shadow-[0_0_20px_rgba(220,38,38,0.5)]"
+        />
         <h2 className="text-4xl font-black text-red-600 mb-4 uppercase tracking-tighter" style={{ fontFamily: "'Playfair Display', serif" }}>
           ИГРА ОКОНЧЕНА
         </h2>
@@ -244,7 +265,7 @@ export default function Game() {
         <div className="space-y-4">
           <button
             onClick={() => startGame("Сложная")}
-            className="w-full p-6 bg-neutral-900 border border-neutral-800 rounded-2xl text-left hover:border-red-900 transition-colors group"
+            className="w-full p-6 bg-neutral-900 border border-neutral-800 rounded-2xl text-left hover:border-red-900 transition-colors group lightning-btn"
           >
             <h3 className="text-xl font-bold text-white group-hover:text-red-500 transition-colors">
               Сложная
@@ -256,7 +277,7 @@ export default function Game() {
           </button>
           <button
             onClick={() => startGame("Невозможная")}
-            className="w-full p-6 bg-neutral-900 border border-neutral-800 rounded-2xl text-left hover:border-red-900 transition-colors group"
+            className="w-full p-6 bg-neutral-900 border border-neutral-800 rounded-2xl text-left hover:border-red-900 transition-colors group lightning-btn"
           >
             <h3 className="text-xl font-bold text-white group-hover:text-red-500 transition-colors">
               Невозможная
@@ -268,7 +289,7 @@ export default function Game() {
           </button>
           <button
             onClick={() => startGame("Бесконечная")}
-            className="w-full p-6 bg-neutral-900 border border-neutral-800 rounded-2xl text-left hover:border-red-900 transition-colors group"
+            className="w-full p-6 bg-neutral-900 border border-neutral-800 rounded-2xl text-left hover:border-red-900 transition-colors group lightning-btn"
           >
             <h3 className="text-xl font-bold text-white group-hover:text-red-500 transition-colors">
               Бесконечная
@@ -316,11 +337,16 @@ export default function Game() {
       {/* Background Image */}
       {bgImage && (
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none transition-opacity duration-1000"
+          className="absolute inset-0 bg-cover bg-center opacity-50 pointer-events-none transition-opacity duration-1000"
           style={{ backgroundImage: `url(${bgImage})` }}
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/80 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/60 to-transparent pointer-events-none" />
+
+      <div className="fog-container">
+        <div className="fog-layer"></div>
+        <div className="fog-layer-2"></div>
+      </div>
 
       {/* Header */}
       <header className="relative z-10 flex justify-between items-center p-4 bg-neutral-950/50 backdrop-blur-sm border-b border-neutral-800">
@@ -461,7 +487,7 @@ export default function Game() {
                   <button
                     key={i}
                     onClick={() => handleOptionSelect(i)}
-                    className="w-full p-4 bg-neutral-900/80 backdrop-blur-md border border-neutral-800 hover:border-red-900 rounded-2xl text-left transition-all active:scale-95 text-sm md:text-base font-medium"
+                    className="w-full p-4 bg-neutral-900/80 backdrop-blur-md border border-neutral-800 hover:border-red-900 rounded-2xl text-left transition-all active:scale-95 text-sm md:text-base font-medium lightning-btn"
                   >
                     {opt}
                   </button>

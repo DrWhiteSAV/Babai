@@ -18,8 +18,12 @@ export async function generateSpookyVoice(text: string): Promise<string> {
     });
     const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
     return base64Audio ? `data:audio/mp3;base64,${base64Audio}` : "";
-  } catch (e) {
-    console.error("TTS Error:", e);
+  } catch (e: any) {
+    if (e?.status === 429 || e?.message?.includes("429") || e?.message?.includes("quota")) {
+      console.warn("TTS Rate limit exceeded, falling back to browser TTS.");
+    } else {
+      console.error("TTS Error:", e);
+    }
     return "";
   }
 }

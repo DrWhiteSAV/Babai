@@ -25,8 +25,15 @@ export default function GameHub() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="flex-1 flex flex-col bg-neutral-950 text-neutral-200"
+      className="flex-1 flex flex-col bg-neutral-950 text-neutral-200 relative overflow-hidden"
     >
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?q=80&w=1080&auto=format&fit=crop')] bg-cover bg-center opacity-30 pointer-events-none mix-blend-overlay" />
+      
+      <div className="fog-container">
+        <div className="fog-layer"></div>
+        <div className="fog-layer-2"></div>
+      </div>
+
       {/* Header Stats */}
       <header className="flex items-center justify-between p-4 bg-neutral-900/80 backdrop-blur-md border-b border-neutral-800 sticky top-0 z-20">
         <div className="flex gap-4">
@@ -89,7 +96,7 @@ export default function GameHub() {
       <div className="p-6 bg-neutral-900/50 backdrop-blur-sm border-t border-neutral-800 rounded-t-3xl space-y-3 relative z-20">
         <button
           onClick={() => navigate("/game")}
-          className="w-full py-4 bg-red-700 hover:bg-red-600 text-white rounded-2xl font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(220,38,38,0.3)]"
+          className="w-full py-4 bg-red-700 hover:bg-red-600 text-white rounded-2xl font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(220,38,38,0.3)] lightning-btn"
         >
           <Play fill="currentColor" size={20} />
           ИГРАТЬ

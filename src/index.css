@@ -1,1 +1,55 @@
 @import "tailwindcss";
+
+@theme {
+  --animate-fog: fog 60s linear infinite;
+  --animate-lightning: lightning 7s infinite;
+}
+
+@keyframes fog {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes lightning {
+  0%, 95%, 98% { filter: brightness(1); }
+  96%, 99% { filter: brightness(1.5) drop-shadow(0 0 15px rgba(255, 255, 255, 0.5)); }
+  100% { filter: brightness(1); }
+}
+
+.fog-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.fog-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  background-image: url('https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog1.png');
+  background-size: 50% 100%;
+  opacity: 0.6;
+  filter: brightness(0);
+  animation: fog 60s linear infinite;
+}
+
+.fog-layer-2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  background-image: url('https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog2.png');
+  background-size: 50% 100%;
+  opacity: 0.4;
+  filter: brightness(0);
+  animation: fog 40s linear infinite;
+}
+
+.lightning-btn {
+  animation: lightning 7s infinite;
+}

@@ -20,9 +20,14 @@ export default function Home() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="flex-1 flex flex-col items-center justify-center p-6 relative"
+      className="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/babai-bg/1080/1920?blur=4')] bg-cover bg-center opacity-20 pointer-events-none mix-blend-overlay" />
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1505635552518-3448ff116af3?q=80&w=1080&auto=format&fit=crop')] bg-cover bg-center opacity-40 pointer-events-none mix-blend-overlay" />
+      
+      <div className="fog-container">
+        <div className="fog-layer"></div>
+        <div className="fog-layer-2"></div>
+      </div>
 
       <div className="relative z-10 text-center mb-12 flex flex-col items-center">
         <motion.img 
@@ -32,15 +37,13 @@ export default function Home() {
           src="https://i.ibb.co/BVgY7XrT/babai.png"
           alt="Бабай Bab-AI"
           className="w-72 md:w-80 drop-shadow-[0_0_25px_rgba(220,38,38,0.5)]"
-          fetchPriority="high"
-          loading="eager"
         />
       </div>
 
       <div className="w-full max-w-xs space-y-4 relative z-10">
         <button
           onClick={handlePlay}
-          className="w-full py-4 bg-red-700 hover:bg-red-600 text-white rounded-xl font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+          className="w-full py-4 bg-red-700 hover:bg-red-600 text-white rounded-xl font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.4)] lightning-btn"
         >
           <Play fill="currentColor" size={20} />
           {character ? "ПРОДОЛЖИТЬ" : "НАЧАТЬ"}

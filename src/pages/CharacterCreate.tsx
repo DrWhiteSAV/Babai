@@ -73,8 +73,13 @@ export default function CharacterCreate() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col p-6 bg-neutral-950 text-neutral-200 relative"
+      className="flex-1 flex flex-col p-6 bg-neutral-950 text-neutral-200 relative overflow-hidden"
     >
+      <div className="fog-container">
+        <div className="fog-layer"></div>
+        <div className="fog-layer-2"></div>
+      </div>
+
       {isGenerating && (
         <motion.div 
           initial={{ opacity: 0 }}
@@ -207,7 +212,7 @@ export default function CharacterCreate() {
               <button
                 disabled={isGenerating}
                 onClick={handleGenerate}
-                className="w-full py-4 bg-red-700 hover:bg-red-600 text-white rounded-xl font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.4)] disabled:opacity-70 disabled:cursor-wait"
+                className="w-full py-4 bg-red-700 hover:bg-red-600 text-white rounded-xl font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.4)] disabled:opacity-70 disabled:cursor-wait lightning-btn"
               >
                 {isGenerating ? (
                   <>
