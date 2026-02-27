@@ -208,6 +208,7 @@ export default function Shop() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [infoModal, setInfoModal] = useState<CurrencyType>(null);
   const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [warningModal, setWarningModal] = useState<{ item: any, deficit: number } | null>(null);
 
   const handleBuy = async (item: any) => {
     if (inventory.includes(item.id)) {
@@ -216,10 +217,10 @@ export default function Shop() {
     }
     
     if (item.currency === "watermelons" && watermelons < item.cost) {
-      alert("Недостаточно арбузов!");
+      setWarningModal({ item, deficit: item.cost - watermelons });
       return;
     } else if (item.currency === "fear" && fear < item.cost) {
-      alert("Недостаточно страха!");
+      setWarningModal({ item, deficit: item.cost - fear });
       return;
     }
 
@@ -244,10 +245,15 @@ export default function Shop() {
   const handleUpgrade = () => {
     if (!character) return;
     const cost = 50 * Math.pow(2, character.telekinesisLevel - 1);
+    if (fear < cost) {
+      setWarningModal({ 
+        item: { name: "Телекинез", currency: "fear" }, 
+        deficit: cost - fear 
+      });
+      return;
+    }
     if (upgradeTelekinesis(cost)) {
       alert("Телекинез улучшен!");
-    } else {
-      alert("Недостаточно страха!");
     }
   };
 
@@ -322,7 +328,11 @@ export default function Shop() {
             </div>
             <button
               onClick={handleUpgrade}
-              className="px-4 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50 rounded-xl font-bold text-sm transition-colors flex items-center gap-1"
+              className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 ${
+                character && fear >= 50 * Math.pow(2, character.telekinesisLevel - 1)
+                  ? "bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50"
+                  : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
+              }`}
             >
               <Skull size={14} />{" "}
               {character ? 50 * Math.pow(2, character.telekinesisLevel - 1) : 0}
@@ -362,6 +372,8 @@ export default function Shop() {
                     className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 ${
                       isOwned
                         ? "bg-green-900/20 text-green-500 border border-green-900/30"
+                        : fear >= item.cost
+                        ? "bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50"
                         : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
                     }`}
                   >
@@ -413,6 +425,8 @@ export default function Shop() {
                     className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 ${
                       isOwned
                         ? "bg-green-900/20 text-green-500 border border-green-900/30"
+                        : watermelons >= item.cost
+                        ? "bg-green-900/30 hover:bg-green-900/50 text-green-400 border border-green-900/50"
                         : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
                     }`}
                   >
@@ -467,12 +481,15 @@ export default function Shop() {
                   disabled={inventory.includes(selectedItem.id) || isProcessing}
                   onClick={() => {
                     handleBuy(selectedItem);
-                    setSelectedItem(null);
+                    if (selectedItem.currency === "fear" && fear >= selectedItem.cost) setSelectedItem(null);
+                    if (selectedItem.currency === "watermelons" && watermelons >= selectedItem.cost) setSelectedItem(null);
                   }}
                   className={`mt-4 w-full py-4 rounded-xl font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2 ${
                     inventory.includes(selectedItem.id)
                       ? "bg-green-900/20 text-green-500 border border-green-900/30"
-                      : "bg-neutral-100 hover:bg-white text-neutral-900"
+                      : (selectedItem.currency === "fear" && fear >= selectedItem.cost) || (selectedItem.currency === "watermelons" && watermelons >= selectedItem.cost)
+                      ? "bg-neutral-100 hover:bg-white text-neutral-900"
+                      : "bg-neutral-800 text-neutral-400 border border-neutral-700"
                   }`}
                 >
                   {inventory.includes(selectedItem.id) ? (
@@ -484,6 +501,50 @@ export default function Shop() {
                       КУПИТЬ ЗА {selectedItem.cost} {selectedItem.currency === 'fear' ? <Skull size={18} /> : '🍉'}
                     </>
                   )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {warningModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setWarningModal(null)}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-neutral-900 border border-red-900/50 rounded-3xl p-6 max-w-sm w-full relative shadow-[0_0_40px_rgba(220,38,38,0.2)]"
+            >
+              <button onClick={() => setWarningModal(null)} className="absolute top-4 right-4 text-neutral-400 hover:text-white p-2 bg-neutral-800 rounded-full transition-colors">
+                <X size={20} />
+              </button>
+              
+              <div className="flex flex-col items-center text-center gap-4 mt-2">
+                <div className="w-20 h-20 rounded-full bg-red-900/20 flex items-center justify-center text-red-500 mb-2">
+                  <Skull size={40} />
+                </div>
+                
+                <div>
+                  <h2 className="text-xl font-black text-white uppercase tracking-wider">Недостаточно ресурсов</h2>
+                  <p className="text-sm font-bold text-red-400 mt-1">Отказ в выдаче: {warningModal.item.name}</p>
+                </div>
+                
+                <p className="text-neutral-300 leading-relaxed text-sm bg-neutral-800/50 p-4 rounded-xl border border-neutral-700/30 w-full">
+                  Эй, Бабай! Твоих запасов не хватает для этой крутой штуки. 
+                  Тебе нужно еще <strong className={warningModal.item.currency === 'fear' ? 'text-red-400' : 'text-green-400'}>
+                    {warningModal.deficit} {warningModal.item.currency === 'fear' ? 'страха' : 'арбузов'}
+                  </strong>, чтобы получить это. 
+                  Иди пугай жильцов или побеждай боссов!
+                </p>
+
+                <button
+                  onClick={() => setWarningModal(null)}
+                  className="mt-2 w-full py-3 rounded-xl font-bold uppercase tracking-widest bg-neutral-800 hover:bg-neutral-700 text-white transition-colors"
+                >
+                  Понятно
                 </button>
               </div>
             </motion.div>

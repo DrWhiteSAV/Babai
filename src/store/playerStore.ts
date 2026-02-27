@@ -184,9 +184,8 @@ export const usePlayerStore = create<PlayerState>()(
       addToGallery: (url) => {
         const { gallery } = get();
         if (!gallery.includes(url)) {
-          // Limit gallery to 6 images. Base64 strings are huge (~300-500KB each).
-          // 3 was too low, 15 was too high. 6 is a middle ground.
-          const newGallery = [url, ...gallery].slice(0, 6);
+          // Limit gallery to 15 images.
+          const newGallery = [url, ...gallery].slice(0, 15);
           try {
             set({ gallery: newGallery });
           } catch (e) {
@@ -247,8 +246,8 @@ export const usePlayerStore = create<PlayerState>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           // Ensure we don't carry over too many images from previous versions
-          if (state.gallery.length > 6) {
-            state.gallery = state.gallery.slice(0, 6);
+          if (state.gallery.length > 15) {
+            state.gallery = state.gallery.slice(0, 15);
           }
         }
       },

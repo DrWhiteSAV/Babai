@@ -1,4 +1,5 @@
 import { GoogleGenAI, Modality, Type } from "@google/genai";
+import { compressImage } from "../utils/imageUtils";
 
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "" });
 
@@ -82,7 +83,8 @@ export const generateBossImage = async (style: string) => {
     });
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
-        return `data:image/png;base64,${part.inlineData.data}`;
+        const base64 = `data:image/png;base64,${part.inlineData.data}`;
+        return await compressImage(base64, 400, 400);
       }
     }
   } catch (e: any) {
@@ -112,7 +114,8 @@ export const editAvatarWithItem = async (currentAvatar: string, item: string) =>
     });
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
-        return `data:image/png;base64,${part.inlineData.data}`;
+        const base64 = `data:image/png;base64,${part.inlineData.data}`;
+        return await compressImage(base64, 256, 256);
       }
     }
   } catch (e: any) {
