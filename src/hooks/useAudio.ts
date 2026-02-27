@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 
 // Stable direct links for background music
@@ -67,19 +67,19 @@ export const useAudio = (volume: number) => {
     };
   }, []);
 
-  const playClick = () => {
+  const playClick = useCallback(() => {
     const click = new Audio('https://www.soundjay.com/buttons/button-16.mp3');
     click.volume = volume / 100;
     click.play().catch(() => {});
-  };
+  }, [volume]);
 
-  const playTransition = () => {
+  const playTransition = useCallback(() => {
     const whoosh = new Audio('https://www.soundjay.com/free-music/whoosh-01.mp3');
     whoosh.volume = volume / 100;
     whoosh.play().catch(() => {});
-  };
+  }, [volume]);
 
-  const playSound = (type: 'scream' | 'cat' | 'fear') => {
+  const playSound = useCallback((type: 'scream' | 'cat' | 'fear') => {
     if (specialAudioRef.current) {
       specialAudioRef.current.pause();
     }
@@ -94,7 +94,7 @@ export const useAudio = (volume: number) => {
     audio.volume = (volume / 100) * 0.5;
     specialAudioRef.current = audio;
     audio.play().catch(() => {});
-  };
+  }, [volume]);
 
   return { playClick, playTransition, playSound };
 };

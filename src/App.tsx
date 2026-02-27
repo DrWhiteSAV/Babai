@@ -49,7 +49,7 @@ function AppContent() {
     const normalizedCurrent = currentSrc.replace(window.location.origin, "");
     const normalizedTarget = targetSrc.replace(window.location.origin, "");
 
-    if (normalizedCurrent !== normalizedTarget || bgMusicRef.current.paused) {
+    if (normalizedCurrent !== normalizedTarget) {
       bgMusicRef.current.src = targetSrc;
       bgMusicRef.current.play().catch(() => {});
     }
@@ -68,10 +68,10 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    // Update energy every minute
+    // Update energy every second to sync with UI timer
     const interval = setInterval(() => {
       updateEnergy();
-    }, 60000);
+    }, 1000);
     return () => clearInterval(interval);
   }, [updateEnergy]);
 
