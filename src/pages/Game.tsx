@@ -247,7 +247,8 @@ export default function Game() {
     setResultText(isCorrect ? scenario.successText : scenario.failureText);
 
     if (isCorrect) {
-      addFear(1);
+      const fearReward = 1 + (character ? character.telekinesisLevel - 1 : 0);
+      addFear(fearReward);
       setScore((s) => s + 1);
       playSuccess(settings.musicVolume);
       setShowSuccessAvatar(true);

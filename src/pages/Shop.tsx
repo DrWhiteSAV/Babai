@@ -46,6 +46,86 @@ const SHOP_ITEMS = [
     currency: "fear",
     icon: "🔧",
   },
+  {
+    id: "mantle_1",
+    name: "Мантия",
+    type: "Одежда",
+    cost: 5000,
+    currency: "fear",
+    icon: "🧥",
+  },
+  {
+    id: "cloak_1",
+    name: "Плащ невидимка",
+    type: "Одежда",
+    cost: 10000,
+    currency: "fear",
+    icon: "🥷",
+  },
+  {
+    id: "predator_suit",
+    name: "Костюм Хищника",
+    type: "Одежда",
+    cost: 20000,
+    currency: "fear",
+    icon: "👽",
+  },
+  {
+    id: "cyber_implants",
+    name: "Кибер-импланты",
+    type: "Мутация",
+    cost: 40000,
+    currency: "fear",
+    icon: "🦾",
+  },
+  {
+    id: "exoskeleton",
+    name: "Экзоскелет",
+    type: "Броня",
+    cost: 80000,
+    currency: "fear",
+    icon: "🤖",
+  },
+  {
+    id: "astronaut_helmet",
+    name: "Шлем Астронавта",
+    type: "Аксессуар",
+    cost: 150000,
+    currency: "fear",
+    icon: "👨‍🚀",
+  },
+  {
+    id: "doomguy_armor",
+    name: "Броня Думгая",
+    type: "Броня",
+    cost: 300000,
+    currency: "fear",
+    icon: "🪖",
+  },
+  {
+    id: "one_ring",
+    name: "Кольцо Всевластия",
+    type: "Аксессуар",
+    cost: 500000,
+    currency: "fear",
+    icon: "💍",
+  },
+  {
+    id: "amulet_ancients",
+    name: "Амулет Древних",
+    type: "Аксессуар",
+    cost: 1000000,
+    currency: "fear",
+    icon: "🧿",
+  },
+  {
+    id: "crown_darkness",
+    name: "Корона Тьмы",
+    type: "Аксессуар",
+    cost: 2000000,
+    currency: "fear",
+    icon: "👑",
+  },
 ];
 
 const BOSS_ITEMS = [
@@ -139,7 +219,7 @@ export default function Shop() {
 
   const handleUpgrade = () => {
     if (!character) return;
-    const cost = character.telekinesisLevel * 20;
+    const cost = 50 * Math.pow(2, character.telekinesisLevel - 1);
     if (upgradeTelekinesis(cost)) {
       alert("Телекинез улучшен!");
     } else {
@@ -205,6 +285,9 @@ export default function Shop() {
                 <p className="text-xs text-neutral-400">
                   Уровень: {character?.telekinesisLevel}
                 </p>
+                <p className="text-[10px] text-purple-400 mt-1">
+                  +{character ? character.telekinesisLevel - 1 : 0} страха при успехе
+                </p>
               </div>
             </div>
             <button
@@ -212,7 +295,7 @@ export default function Shop() {
               className="px-4 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50 rounded-xl font-bold text-sm transition-colors flex items-center gap-1"
             >
               <Skull size={14} />{" "}
-              {character ? character.telekinesisLevel * 20 : 0}
+              {character ? 50 * Math.pow(2, character.telekinesisLevel - 1) : 0}
             </button>
           </div>
         </section>
