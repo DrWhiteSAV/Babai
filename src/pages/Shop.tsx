@@ -5,336 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ShoppingCart, ArrowLeft, Skull, Zap, Loader2, X } from "lucide-react";
 import { editAvatarWithItem } from "../services/geminiService";
 import CurrencyModal, { CurrencyType } from "../components/CurrencyModal";
-
-const SHOP_ITEMS = [
-  {
-    id: "wig_1",
-    name: 'Парик "Одуванчик"',
-    type: "Аксессуар",
-    cost: 10,
-    currency: "fear",
-    icon: "💇‍♂️",
-    description: "Стильный парик, который заставит монстров чихать. Немного щекочет уши, но зато выглядит эффектно.",
-  },
-  {
-    id: "teeth_1",
-    name: "Ржавые зубы",
-    type: "Аксессуар",
-    cost: 15,
-    currency: "fear",
-    icon: "🦷",
-    description: "Ржавые зубы для устрашения соседей. Не рекомендуется использовать для пережевывания твердой пищи.",
-  },
-  {
-    id: "pajamas_1",
-    name: "Кровавая пижама",
-    type: "Одежда",
-    cost: 25,
-    currency: "fear",
-    icon: "👕",
-    description: "Удобная, но слегка испачканная пижама. Монстры подумают, что вы уже с кем-то подрались.",
-  },
-  {
-    id: "tongue_1",
-    name: "Раздвоенный язык",
-    type: "Мутация",
-    cost: 50,
-    currency: "fear",
-    icon: "👅",
-    description: "Позволяет шипеть на врагов с двойной эффективностью. Отлично подходит для передразнивания змей.",
-  },
-  {
-    id: "weapon_1",
-    name: "Ржавая труба",
-    type: "Оружие",
-    cost: 100,
-    currency: "fear",
-    icon: "🔧",
-    description: "Надежный аргумент в любом споре с нечистью. Тяжелая, холодная и очень убедительная.",
-  },
-  {
-    id: "eyes_1",
-    name: "Светящиеся глаза",
-    type: "Мутация",
-    cost: 150,
-    currency: "fear",
-    icon: "👁️",
-    description: "Позволяют видеть в темноте и пугать соседей до икоты.",
-  },
-  {
-    id: "claw_1",
-    name: "Когтистая лапа",
-    type: "Мутация",
-    cost: 200,
-    currency: "fear",
-    icon: "🐾",
-    description: "Острые как бритва когти. Удобно чесать спину и вскрывать замки.",
-  },
-  {
-    id: "mask_1",
-    name: "Жуткая маска",
-    type: "Аксессуар",
-    cost: 250,
-    currency: "fear",
-    icon: "🎭",
-    description: "Маска, от которой даже вам самому становится не по себе.",
-  },
-  {
-    id: "chain_1",
-    name: "Цепь с шипами",
-    type: "Оружие",
-    cost: 300,
-    currency: "fear",
-    icon: "⛓️",
-    description: "Тяжелая цепь. Звенит в ночи, предвещая ваше появление.",
-  },
-  {
-    id: "cloak_torn",
-    name: "Рваный плащ",
-    type: "Одежда",
-    cost: 400,
-    currency: "fear",
-    icon: "🧥",
-    description: "Старый плащ, развевающийся на мистическом ветру.",
-  },
-  {
-    id: "horns_1",
-    name: "Демонические рога",
-    type: "Мутация",
-    cost: 500,
-    currency: "fear",
-    icon: "😈",
-    description: "Небольшие рожки, придающие вам дьявольский шарм.",
-  },
-  {
-    id: "amulet_bone",
-    name: "Костяной амулет",
-    type: "Аксессуар",
-    cost: 600,
-    currency: "fear",
-    icon: "🦴",
-    description: "Амулет из неизвестных костей. Слегка попахивает, но работает.",
-  },
-  {
-    id: "axe_1",
-    name: "Топор дровосека",
-    type: "Оружие",
-    cost: 750,
-    currency: "fear",
-    icon: "🪓",
-    description: "Классика жанра. Идеально для прорубания дверей.",
-  },
-  {
-    id: "shroud_1",
-    name: "Призрачный саван",
-    type: "Одежда",
-    cost: 1000,
-    currency: "fear",
-    icon: "👻",
-    description: "Делает вас полупрозрачным и позволяет проходить сквозь тонкие стены.",
-  },
-  {
-    id: "eye_3",
-    name: "Третий глаз",
-    type: "Мутация",
-    cost: 1250,
-    currency: "fear",
-    icon: "👁️‍🗨️",
-    description: "Видит то, что скрыто. И иногда то, что лучше бы не видеть.",
-  },
-  {
-    id: "doll_1",
-    name: "Проклятая кукла",
-    type: "Аксессуар",
-    cost: 1500,
-    currency: "fear",
-    icon: "🪆",
-    description: "Маленькая кукла, которая иногда шепчет вам советы.",
-  },
-  {
-    id: "scythe_1",
-    name: "Коса жнеца",
-    type: "Оружие",
-    cost: 2000,
-    currency: "fear",
-    icon: "🌾",
-    description: "Острое лезвие, собирающее страх словно урожай.",
-  },
-  {
-    id: "wings_1",
-    name: "Крылья летучей мыши",
-    type: "Мутация",
-    cost: 2500,
-    currency: "fear",
-    icon: "🦇",
-    description: "Позволяют парить над землей и пугать прохожих сверху.",
-  },
-  {
-    id: "armor_shadow",
-    name: "Доспех из теней",
-    type: "Броня",
-    cost: 3000,
-    currency: "fear",
-    icon: "🌑",
-    description: "Соткан из чистой тьмы. Поглощает свет и надежды врагов.",
-  },
-  {
-    id: "eye_abyss",
-    name: "Око бездны",
-    type: "Аксессуар",
-    cost: 4000,
-    currency: "fear",
-    icon: "🌌",
-    description: "Заглянув в него, враги теряют рассудок.",
-  },
-  {
-    id: "mantle_1",
-    name: "Мантия",
-    type: "Одежда",
-    cost: 5000,
-    currency: "fear",
-    icon: "🧥",
-    description: "Темная мантия, скрывающая вас во мраке. Идеально подходит для драматичных появлений.",
-  },
-  {
-    id: "cloak_1",
-    name: "Плащ невидимка",
-    type: "Одежда",
-    cost: 10000,
-    currency: "fear",
-    icon: "🥷",
-    description: "Делает вас почти невидимым для глупых монстров. Главное — не наступить на кота в темноте.",
-  },
-  {
-    id: "predator_suit",
-    name: "Костюм Хищника",
-    type: "Одежда",
-    cost: 20000,
-    currency: "fear",
-    icon: "👽",
-    description: "Высокотехнологичный костюм инопланетного охотника. Встроенный тепловизор в комплект не входит.",
-  },
-  {
-    id: "cyber_implants",
-    name: "Кибер-импланты",
-    type: "Мутация",
-    cost: 40000,
-    currency: "fear",
-    icon: "🦾",
-    description: "Металлические импланты, делающие вас киборгом. Теперь вы можете заряжать телефон от пальца.",
-  },
-  {
-    id: "exoskeleton",
-    name: "Экзоскелет",
-    type: "Броня",
-    cost: 80000,
-    currency: "fear",
-    icon: "🤖",
-    description: "Мощный каркас, многократно увеличивающий силу. Позволяет открывать банки с огурцами без усилий.",
-  },
-  {
-    id: "astronaut_helmet",
-    name: "Шлем Астронавта",
-    type: "Аксессуар",
-    cost: 150000,
-    currency: "fear",
-    icon: "👨‍🚀",
-    description: "Защитит голову даже в открытом космосе. И от падающих с потолка пауков.",
-  },
-  {
-    id: "doomguy_armor",
-    name: "Броня Думгая",
-    type: "Броня",
-    cost: 300000,
-    currency: "fear",
-    icon: "🪖",
-    description: "Броня легендарного палача рока. Демоны в ужасе разбегаются при одном вашем виде.",
-  },
-  {
-    id: "one_ring",
-    name: "Кольцо Всевластия",
-    type: "Аксессуар",
-    cost: 500000,
-    currency: "fear",
-    icon: "💍",
-    description: "Моя прелесть... Дает невероятную власть над тенями, но вызывает странную тягу к вулканам.",
-  },
-  {
-    id: "amulet_ancients",
-    name: "Амулет Древних",
-    type: "Аксессуар",
-    cost: 1000000,
-    currency: "fear",
-    icon: "🧿",
-    description: "Древний артефакт, пульсирующий темной энергией. Никто не знает, что он делает, но выглядит круто.",
-  },
-  {
-    id: "crown_darkness",
-    name: "Корона Тьмы",
-    type: "Аксессуар",
-    cost: 2000000,
-    currency: "fear",
-    icon: "👑",
-    description: "Символ абсолютной власти над ночными кошмарами. Вы — новый повелитель этого хаба.",
-  },
-];
-
-const BOSS_ITEMS = [
-  {
-    id: "pajama_home",
-    name: "Домашняя пижама",
-    type: "Пижама (+1 сек к боссу)",
-    cost: 25,
-    currency: "watermelons",
-    icon: "🏠",
-    description: "Мягкая и уютная. Дает немного больше времени, чтобы закликать босса.",
-  },
-  {
-    id: "pajama_forest",
-    name: "Лесная пижама",
-    type: "Пижама (+5 сек к боссу)",
-    cost: 250,
-    currency: "watermelons",
-    icon: "🌲",
-    description: "Сшита из листьев и мха. Боссы путают вас с кустом и атакуют медленнее.",
-  },
-  {
-    id: "pajama_star",
-    name: "Звездная пижама",
-    type: "Пижама (+15 сек к боссу)",
-    cost: 2500,
-    currency: "watermelons",
-    icon: "⭐",
-    description: "Светится в темноте. Ослепляет боссов, давая вам огромное преимущество по времени.",
-  },
-  {
-    id: "tongue_frog",
-    name: "Язык лягушки",
-    type: "Язык (Урон боссу: 2)",
-    cost: 100,
-    currency: "watermelons",
-    icon: "🐸",
-    description: "Длинный и липкий. Позволяет наносить двойной урон при каждом клике по боссу.",
-  },
-  {
-    id: "tongue_anteater",
-    name: "Язык муравьеда",
-    type: "Язык (Урон боссу: 3)",
-    cost: 500,
-    currency: "watermelons",
-    icon: "🐜",
-    description: "Очень длинный и очень липкий. Тройной урон по боссам гарантирован.",
-  },
-  {
-    id: "tongue_chameleon",
-    name: "Язык хамелеона",
-    type: "Язык (Урон боссу: 4)",
-    cost: 5000,
-    currency: "watermelons",
-    icon: "🦎",
-    description: "Молниеносный удар. Четверной урон превращает битвы с боссами в легкую прогулку.",
-  },
-];
+import { SHOP_ITEMS, BOSS_ITEMS } from "../data/items";
 
 export default function Shop() {
   const navigate = useNavigate();
@@ -369,7 +40,11 @@ export default function Shop() {
     const success = buyItem(item.id, item.cost, item.currency);
     if (success && character) {
       // Edit avatar
-      const newAvatar = await editAvatarWithItem(character.avatarUrl, item.name);
+      const allOwnedItems = [...inventory, item.id]
+        .map(id => [...SHOP_ITEMS, ...BOSS_ITEMS].find(i => i.id === id)?.name)
+        .filter(Boolean) as string[];
+      
+      const newAvatar = await editAvatarWithItem(character.avatarUrl, character, allOwnedItems, item.name);
       updateCharacter({ avatarUrl: newAvatar });
       alert(`Вы купили: ${item.name}. Внешность обновлена!`);
     }
@@ -460,25 +135,34 @@ export default function Shop() {
           <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2">
             Способности и Улучшения
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-purple-900/30 flex items-center justify-center text-2xl border border-purple-500/30">
-                  🧠
-                </div>
-                <div>
-                  <h3 className="font-bold text-white">Телекинез</h3>
-                  <p className="text-xs text-neutral-400">
-                    Уровень: {character?.telekinesisLevel}
-                  </p>
-                  <p className="text-[10px] text-purple-400 mt-1">
-                    +{character ? character.telekinesisLevel - 1 : 0} страха при успехе
-                  </p>
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div 
+              onClick={() => setSelectedItem({
+                id: "telekinesis",
+                name: "Телекинез",
+                type: "Способность",
+                icon: "🧠",
+                description: `Увеличивает количество получаемого страха за правильные ответы. Текущий бонус: +${character ? character.telekinesisLevel - 1 : 0} страха.`,
+                cost: 50 * Math.pow(2, (character?.telekinesisLevel || 1) - 1),
+                currency: "fear",
+                isUpgrade: true,
+                action: handleUpgrade
+              })}
+              className="bg-neutral-900 border border-neutral-800 hover:border-neutral-600 rounded-2xl p-4 flex flex-col items-center text-center gap-3 transition-colors cursor-pointer"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-purple-900/30 flex items-center justify-center text-3xl border border-purple-500/30 shadow-inner">
+                🧠
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-white leading-tight">Телекинез</h3>
+                <p className="text-[10px] text-neutral-500 uppercase tracking-wider mt-1">Уровень: {character?.telekinesisLevel}</p>
               </div>
               <button
-                onClick={handleUpgrade}
-                className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 ${
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUpgrade();
+                }}
+                className={`w-full py-2 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-1 ${
                   character && fear >= 50 * Math.pow(2, character.telekinesisLevel - 1)
                     ? "bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50"
                     : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
@@ -489,24 +173,33 @@ export default function Shop() {
               </button>
             </div>
 
-            <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-green-900/30 flex items-center justify-center text-2xl border border-green-500/30">
-                  👹
-                </div>
-                <div>
-                  <h3 className="font-bold text-white">Усиление Босса</h3>
-                  <p className="text-xs text-neutral-400">
-                    Уровень: {bossLevel}
-                  </p>
-                  <p className="text-[10px] text-green-400 mt-1">
-                    Награда: {25 * Math.pow(2, bossLevel - 1)} 🍉
-                  </p>
-                </div>
+            <div 
+              onClick={() => setSelectedItem({
+                id: "boss_level",
+                name: "Усиление Босса",
+                type: "Улучшение",
+                icon: "👹",
+                description: `Увеличивает здоровье босса и награду за его убийство. Текущая награда: ${25 * Math.pow(2, bossLevel - 1)} арбузов.`,
+                cost: 500 * Math.pow(5, bossLevel - 1),
+                currency: "watermelons",
+                isUpgrade: true,
+                action: handleUpgradeBoss
+              })}
+              className="bg-neutral-900 border border-neutral-800 hover:border-neutral-600 rounded-2xl p-4 flex flex-col items-center text-center gap-3 transition-colors cursor-pointer"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-green-900/30 flex items-center justify-center text-3xl border border-green-500/30 shadow-inner">
+                👹
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-white leading-tight">Усиление Босса</h3>
+                <p className="text-[10px] text-neutral-500 uppercase tracking-wider mt-1">Уровень: {bossLevel}</p>
               </div>
               <button
-                onClick={handleUpgradeBoss}
-                className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 ${
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUpgradeBoss();
+                }}
+                className={`w-full py-2 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-1 ${
                   watermelons >= 500 * Math.pow(5, bossLevel - 1)
                     ? "bg-green-900/30 hover:bg-green-900/50 text-green-400 border border-green-900/50"
                     : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
@@ -652,27 +345,33 @@ export default function Shop() {
                 </p>
 
                 <button
-                  disabled={inventory.includes(selectedItem.id) || isProcessing}
+                  disabled={(!selectedItem.isUpgrade && inventory.includes(selectedItem.id)) || isProcessing}
                   onClick={() => {
-                    handleBuy(selectedItem);
-                    if (selectedItem.currency === "fear" && fear >= selectedItem.cost) setSelectedItem(null);
-                    if (selectedItem.currency === "watermelons" && watermelons >= selectedItem.cost) setSelectedItem(null);
+                    if (selectedItem.isUpgrade) {
+                      selectedItem.action();
+                      if (selectedItem.currency === "fear" && fear >= selectedItem.cost) setSelectedItem(null);
+                      if (selectedItem.currency === "watermelons" && watermelons >= selectedItem.cost) setSelectedItem(null);
+                    } else {
+                      handleBuy(selectedItem);
+                      if (selectedItem.currency === "fear" && fear >= selectedItem.cost) setSelectedItem(null);
+                      if (selectedItem.currency === "watermelons" && watermelons >= selectedItem.cost) setSelectedItem(null);
+                    }
                   }}
                   className={`mt-4 w-full py-4 rounded-xl font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2 ${
-                    inventory.includes(selectedItem.id)
+                    !selectedItem.isUpgrade && inventory.includes(selectedItem.id)
                       ? "bg-green-900/20 text-green-500 border border-green-900/30"
                       : (selectedItem.currency === "fear" && fear >= selectedItem.cost) || (selectedItem.currency === "watermelons" && watermelons >= selectedItem.cost)
                       ? "bg-neutral-100 hover:bg-white text-neutral-900"
                       : "bg-neutral-800 text-neutral-400 border border-neutral-700"
                   }`}
                 >
-                  {inventory.includes(selectedItem.id) ? (
+                  {!selectedItem.isUpgrade && inventory.includes(selectedItem.id) ? (
                     "УЖЕ КУПЛЕНО"
                   ) : isProcessing ? (
                     <Loader2 size={20} className="animate-spin" />
                   ) : (
                     <>
-                      КУПИТЬ ЗА {selectedItem.cost} {selectedItem.currency === 'fear' ? <Skull size={18} /> : '🍉'}
+                      {selectedItem.isUpgrade ? "УЛУЧШИТЬ ЗА" : "КУПИТЬ ЗА"} {selectedItem.cost} {selectedItem.currency === 'fear' ? <Skull size={18} /> : '🍉'}
                     </>
                   )}
                 </button>
