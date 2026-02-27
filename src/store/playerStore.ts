@@ -49,6 +49,7 @@ export interface PlayerState {
   fear: number;
   energy: number;
   watermelons: number;
+  bossLevel: number;
   lastEnergyUpdate: number;
   inventory: string[];
   gallery: string[];
@@ -75,6 +76,7 @@ export interface PlayerState {
   buyItem: (item: string, cost: number, currency?: 'fear' | 'watermelons') => boolean;
   addToGallery: (url: string) => void;
   upgradeTelekinesis: (cost: number) => boolean;
+  upgradeBossLevel: (cost: number) => boolean;
   addAchievement: (id: string) => void;
   addFriend: (name: string) => void;
   toggleFriendAi: (name: string) => void;
@@ -99,6 +101,7 @@ export const usePlayerStore = create<PlayerState>()(
       fear: 0,
       energy: 50, // Starting energy
       watermelons: 0,
+      bossLevel: 1,
       lastEnergyUpdate: Date.now(),
       inventory: [],
       gallery: DEFAULT_IMAGES,
@@ -184,8 +187,9 @@ export const usePlayerStore = create<PlayerState>()(
       addToGallery: (url) => {
         const { gallery } = get();
         if (!gallery.includes(url)) {
-          // Limit gallery to 15 images.
-          const newGallery = [url, ...gallery].slice(0, 15);
+          // Limit gallery to 6 images. Base64 strings are huge (~300-500KB each).
+          // 3 was too low, 15 was too high. 6 is a middle ground.
+          const newGallery = [url, ...gallery].slice(0, 6);
           try {
             set({ gallery: newGallery });
           } catch (e) {
@@ -203,6 +207,17 @@ export const usePlayerStore = create<PlayerState>()(
               ...character,
               telekinesisLevel: character.telekinesisLevel + 1,
             },
+          });
+          return true;
+        }
+        return false;
+      },
+      upgradeBossLevel: (cost) => {
+        const { watermelons, bossLevel } = get();
+        if (watermelons >= cost) {
+          set({
+            watermelons: watermelons - cost,
+            bossLevel: bossLevel + 1,
           });
           return true;
         }
@@ -246,8 +261,8 @@ export const usePlayerStore = create<PlayerState>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           // Ensure we don't carry over too many images from previous versions
-          if (state.gallery.length > 15) {
-            state.gallery = state.gallery.slice(0, 15);
+          if (state.gallery.length > 6) {
+            state.gallery = state.gallery.slice(0, 6);
           }
         }
       },

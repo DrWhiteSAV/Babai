@@ -53,6 +53,141 @@ const SHOP_ITEMS = [
     description: "Надежный аргумент в любом споре с нечистью. Тяжелая, холодная и очень убедительная.",
   },
   {
+    id: "eyes_1",
+    name: "Светящиеся глаза",
+    type: "Мутация",
+    cost: 150,
+    currency: "fear",
+    icon: "👁️",
+    description: "Позволяют видеть в темноте и пугать соседей до икоты.",
+  },
+  {
+    id: "claw_1",
+    name: "Когтистая лапа",
+    type: "Мутация",
+    cost: 200,
+    currency: "fear",
+    icon: "🐾",
+    description: "Острые как бритва когти. Удобно чесать спину и вскрывать замки.",
+  },
+  {
+    id: "mask_1",
+    name: "Жуткая маска",
+    type: "Аксессуар",
+    cost: 250,
+    currency: "fear",
+    icon: "🎭",
+    description: "Маска, от которой даже вам самому становится не по себе.",
+  },
+  {
+    id: "chain_1",
+    name: "Цепь с шипами",
+    type: "Оружие",
+    cost: 300,
+    currency: "fear",
+    icon: "⛓️",
+    description: "Тяжелая цепь. Звенит в ночи, предвещая ваше появление.",
+  },
+  {
+    id: "cloak_torn",
+    name: "Рваный плащ",
+    type: "Одежда",
+    cost: 400,
+    currency: "fear",
+    icon: "🧥",
+    description: "Старый плащ, развевающийся на мистическом ветру.",
+  },
+  {
+    id: "horns_1",
+    name: "Демонические рога",
+    type: "Мутация",
+    cost: 500,
+    currency: "fear",
+    icon: "😈",
+    description: "Небольшие рожки, придающие вам дьявольский шарм.",
+  },
+  {
+    id: "amulet_bone",
+    name: "Костяной амулет",
+    type: "Аксессуар",
+    cost: 600,
+    currency: "fear",
+    icon: "🦴",
+    description: "Амулет из неизвестных костей. Слегка попахивает, но работает.",
+  },
+  {
+    id: "axe_1",
+    name: "Топор дровосека",
+    type: "Оружие",
+    cost: 750,
+    currency: "fear",
+    icon: "🪓",
+    description: "Классика жанра. Идеально для прорубания дверей.",
+  },
+  {
+    id: "shroud_1",
+    name: "Призрачный саван",
+    type: "Одежда",
+    cost: 1000,
+    currency: "fear",
+    icon: "👻",
+    description: "Делает вас полупрозрачным и позволяет проходить сквозь тонкие стены.",
+  },
+  {
+    id: "eye_3",
+    name: "Третий глаз",
+    type: "Мутация",
+    cost: 1250,
+    currency: "fear",
+    icon: "👁️‍🗨️",
+    description: "Видит то, что скрыто. И иногда то, что лучше бы не видеть.",
+  },
+  {
+    id: "doll_1",
+    name: "Проклятая кукла",
+    type: "Аксессуар",
+    cost: 1500,
+    currency: "fear",
+    icon: "🪆",
+    description: "Маленькая кукла, которая иногда шепчет вам советы.",
+  },
+  {
+    id: "scythe_1",
+    name: "Коса жнеца",
+    type: "Оружие",
+    cost: 2000,
+    currency: "fear",
+    icon: "🌾",
+    description: "Острое лезвие, собирающее страх словно урожай.",
+  },
+  {
+    id: "wings_1",
+    name: "Крылья летучей мыши",
+    type: "Мутация",
+    cost: 2500,
+    currency: "fear",
+    icon: "🦇",
+    description: "Позволяют парить над землей и пугать прохожих сверху.",
+  },
+  {
+    id: "armor_shadow",
+    name: "Доспех из теней",
+    type: "Броня",
+    cost: 3000,
+    currency: "fear",
+    icon: "🌑",
+    description: "Соткан из чистой тьмы. Поглощает свет и надежды врагов.",
+  },
+  {
+    id: "eye_abyss",
+    name: "Око бездны",
+    type: "Аксессуар",
+    cost: 4000,
+    currency: "fear",
+    icon: "🌌",
+    description: "Заглянув в него, враги теряют рассудок.",
+  },
+  {
     id: "mantle_1",
     name: "Мантия",
     type: "Одежда",
@@ -203,7 +338,7 @@ const BOSS_ITEMS = [
 
 export default function Shop() {
   const navigate = useNavigate();
-  const { fear, watermelons, inventory, buyItem, upgradeTelekinesis, character, updateCharacter, addToGallery } =
+  const { fear, watermelons, inventory, buyItem, upgradeTelekinesis, upgradeBossLevel, bossLevel, character, updateCharacter, addToGallery } =
     usePlayerStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [infoModal, setInfoModal] = useState<CurrencyType>(null);
@@ -257,6 +392,20 @@ export default function Shop() {
     }
   };
 
+  const handleUpgradeBoss = () => {
+    const cost = 500 * Math.pow(5, bossLevel - 1);
+    if (watermelons < cost) {
+      setWarningModal({ 
+        item: { name: "Усиление Босса", currency: "watermelons" }, 
+        deficit: cost - watermelons 
+      });
+      return;
+    }
+    if (upgradeBossLevel(cost)) {
+      alert("Уровень босса повышен!");
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 50 }}
@@ -306,37 +455,66 @@ export default function Shop() {
           />
         </div>
 
-        {/* Telekinesis Upgrade */}
+        {/* Upgrades */}
         <section>
           <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2">
-            Способности
+            Способности и Улучшения
           </h2>
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-purple-900/30 flex items-center justify-center text-2xl border border-purple-500/30">
-                🧠
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-purple-900/30 flex items-center justify-center text-2xl border border-purple-500/30">
+                  🧠
+                </div>
+                <div>
+                  <h3 className="font-bold text-white">Телекинез</h3>
+                  <p className="text-xs text-neutral-400">
+                    Уровень: {character?.telekinesisLevel}
+                  </p>
+                  <p className="text-[10px] text-purple-400 mt-1">
+                    +{character ? character.telekinesisLevel - 1 : 0} страха при успехе
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-white">Телекинез</h3>
-                <p className="text-xs text-neutral-400">
-                  Уровень: {character?.telekinesisLevel}
-                </p>
-                <p className="text-[10px] text-purple-400 mt-1">
-                  +{character ? character.telekinesisLevel - 1 : 0} страха при успехе
-                </p>
-              </div>
+              <button
+                onClick={handleUpgrade}
+                className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 ${
+                  character && fear >= 50 * Math.pow(2, character.telekinesisLevel - 1)
+                    ? "bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50"
+                    : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
+                }`}
+              >
+                <Skull size={14} />{" "}
+                {character ? 50 * Math.pow(2, character.telekinesisLevel - 1) : 0}
+              </button>
             </div>
-            <button
-              onClick={handleUpgrade}
-              className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 ${
-                character && fear >= 50 * Math.pow(2, character.telekinesisLevel - 1)
-                  ? "bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50"
-                  : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
-              }`}
-            >
-              <Skull size={14} />{" "}
-              {character ? 50 * Math.pow(2, character.telekinesisLevel - 1) : 0}
-            </button>
+
+            <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-green-900/30 flex items-center justify-center text-2xl border border-green-500/30">
+                  👹
+                </div>
+                <div>
+                  <h3 className="font-bold text-white">Усиление Босса</h3>
+                  <p className="text-xs text-neutral-400">
+                    Уровень: {bossLevel}
+                  </p>
+                  <p className="text-[10px] text-green-400 mt-1">
+                    Награда: {25 * Math.pow(2, bossLevel - 1)} 🍉
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleUpgradeBoss}
+                className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 ${
+                  watermelons >= 500 * Math.pow(5, bossLevel - 1)
+                    ? "bg-green-900/30 hover:bg-green-900/50 text-green-400 border border-green-900/50"
+                    : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
+                }`}
+              >
+                🍉 {500 * Math.pow(5, bossLevel - 1)}
+              </button>
+            </div>
           </div>
         </section>
 
@@ -345,23 +523,21 @@ export default function Shop() {
           <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2">
             Товары за Страх
           </h2>
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {SHOP_ITEMS.map((item) => {
               const isOwned = inventory.includes(item.id);
               return (
                 <div
                   key={item.id}
                   onClick={() => setSelectedItem(item)}
-                  className={`bg-neutral-900 border ${isOwned ? "border-green-900/50 opacity-70" : "border-neutral-800 hover:border-neutral-600"} rounded-2xl p-4 flex items-center justify-between transition-colors cursor-pointer`}
+                  className={`bg-neutral-900 border ${isOwned ? "border-green-900/50 opacity-70" : "border-neutral-800 hover:border-neutral-600"} rounded-2xl p-4 flex flex-col items-center text-center gap-3 transition-colors cursor-pointer`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-neutral-800 flex items-center justify-center text-2xl">
-                      {item.icon}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-white">{item.name}</h3>
-                      <p className="text-xs text-neutral-400">{item.type}</p>
-                    </div>
+                  <div className="w-16 h-16 rounded-2xl bg-neutral-800 flex items-center justify-center text-3xl shadow-inner">
+                    {item.icon}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-white leading-tight">{item.name}</h3>
+                    <p className="text-[10px] text-neutral-500 uppercase tracking-wider mt-1">{item.type}</p>
                   </div>
                   <button
                     disabled={isOwned || isProcessing}
@@ -369,7 +545,7 @@ export default function Shop() {
                       e.stopPropagation();
                       handleBuy(item);
                     }}
-                    className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 ${
+                    className={`w-full py-2 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-1 ${
                       isOwned
                         ? "bg-green-900/20 text-green-500 border border-green-900/30"
                         : fear >= item.cost
@@ -398,23 +574,21 @@ export default function Shop() {
           <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2">
             Экипировка для Боссов
           </h2>
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {BOSS_ITEMS.map((item) => {
               const isOwned = inventory.includes(item.id);
               return (
                 <div
                   key={item.id}
                   onClick={() => setSelectedItem(item)}
-                  className={`bg-neutral-900 border ${isOwned ? "border-green-900/50 opacity-70" : "border-neutral-800 hover:border-neutral-600"} rounded-2xl p-4 flex items-center justify-between transition-colors cursor-pointer`}
+                  className={`bg-neutral-900 border ${isOwned ? "border-green-900/50 opacity-70" : "border-neutral-800 hover:border-neutral-600"} rounded-2xl p-4 flex flex-col items-center text-center gap-3 transition-colors cursor-pointer`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-neutral-800 flex items-center justify-center text-2xl">
-                      {item.icon}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-white">{item.name}</h3>
-                      <p className="text-xs text-neutral-400">{item.type}</p>
-                    </div>
+                  <div className="w-16 h-16 rounded-2xl bg-neutral-800 flex items-center justify-center text-3xl shadow-inner">
+                    {item.icon}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-white leading-tight">{item.name}</h3>
+                    <p className="text-[10px] text-neutral-500 uppercase tracking-wider mt-1">{item.type}</p>
                   </div>
                   <button
                     disabled={isOwned || isProcessing}
@@ -422,7 +596,7 @@ export default function Shop() {
                       e.stopPropagation();
                       handleBuy(item);
                     }}
-                    className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 ${
+                    className={`w-full py-2 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-1 ${
                       isOwned
                         ? "bg-green-900/20 text-green-500 border border-green-900/30"
                         : watermelons >= item.cost

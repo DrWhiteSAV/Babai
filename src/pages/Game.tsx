@@ -31,7 +31,7 @@ interface Scenario {
 
 export default function Game() {
   const navigate = useNavigate();
-  const { character, fear, energy, useEnergy, addFear, settings, gallery, addToGallery, addWatermelons, inventory, watermelons, lastEnergyUpdate } =
+  const { character, fear, energy, useEnergy, addFear, settings, gallery, addToGallery, addWatermelons, inventory, watermelons, lastEnergyUpdate, bossLevel } =
     usePlayerStore();
 
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
@@ -278,9 +278,13 @@ export default function Game() {
     if (isBossDefeated) return;
     const newTaps = bossTaps + getTapDamage();
     setBossTaps(newTaps);
-    if (newTaps >= 100) {
+    
+    const maxHp = 100 * Math.pow(2, bossLevel - 1);
+    const reward = 25 * Math.pow(2, bossLevel - 1);
+
+    if (newTaps >= maxHp) {
       setIsBossDefeated(true);
-      addWatermelons(25);
+      addWatermelons(reward);
       playSuccess(settings.musicVolume);
     }
   };
@@ -518,10 +522,10 @@ export default function Game() {
               className="flex-1 flex flex-col items-center justify-center"
             >
               <div className="text-center mb-6">
-                <h3 className="text-2xl font-black text-red-600 uppercase tracking-tighter mb-2">БИТВА С БОССОМ</h3>
+                <h3 className="text-2xl font-black text-red-600 uppercase tracking-tighter mb-2">БИТВА С БОССОМ (УР. {bossLevel})</h3>
                 <div className="flex gap-4 justify-center font-mono">
                   <span className="text-yellow-500">ВРЕМЯ: {bossTimer}с</span>
-                  <span className="text-red-500">УДАРЫ: {bossTaps}/100</span>
+                  <span className="text-red-500">УДАРЫ: {bossTaps}/{100 * Math.pow(2, bossLevel - 1)}</span>
                 </div>
               </div>
 
@@ -549,7 +553,7 @@ export default function Game() {
 
               {isBossDefeated ? (
                 <div className="mt-8 text-center space-y-4">
-                  <p className="text-green-400 font-bold">Вы одолели босса и получили 25 кг арбуза!</p>
+                  <p className="text-green-400 font-bold">Вы одолели босса и получили {25 * Math.pow(2, bossLevel - 1)} кг арбуза!</p>
                   <button
                     onClick={() => {
                       setIsBossBattle(false);
