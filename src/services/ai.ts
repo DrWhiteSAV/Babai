@@ -2,9 +2,23 @@ import { GoogleGenAI, Type, Modality } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+// Helper for exponential backoff retry
+async function withRetry<T>(fn: () => Promise<T>, retries = 2, delay = 1000): Promise<T> {
+  try {
+    return await fn();
+  } catch (e: any) {
+    const isQuotaError = e?.status === 429 || e?.message?.includes("429") || e?.message?.includes("quota");
+    if (isQuotaError && retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return withRetry(fn, retries - 1, delay * 2);
+    }
+    throw e;
+  }
+}
+
 export async function generateSpookyVoice(text: string): Promise<string> {
   try {
-    const response = await ai.models.generateContent({
+    const response = await withRetry(() => ai.models.generateContent({
       model: "gemini-2.5-flash-preview-tts",
       contents: [{ parts: [{ text: `Произнеси жутким, пугающим голосом: ${text}` }] }],
       config: {
@@ -15,15 +29,11 @@ export async function generateSpookyVoice(text: string): Promise<string> {
           },
         },
       },
-    });
+    }));
     const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
     return base64Audio ? `data:audio/mp3;base64,${base64Audio}` : "";
   } catch (e: any) {
-    if (e?.status === 429 || e?.message?.includes("429") || e?.message?.includes("quota")) {
-      console.warn("TTS Rate limit exceeded, falling back to browser TTS.");
-    } else {
-      console.error("TTS Error:", e);
-    }
+    console.warn("TTS Error or Rate limit, falling back to browser TTS.");
     return "";
   }
 }
@@ -33,16 +43,17 @@ export async function generateCharacterName(
   style: string,
 ): Promise<string> {
   try {
-    const response = await ai.models.generateContent({
+    const response = await withRetry(() => ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Сгенерируй уникальное, забавное имя для славянского кибернетического духа.
       Пол: ${gender}. Стиль: ${style}. 
       Имя должно состоять из одного или двух слов. Верни только имя, без лишних слов.`,
-    });
+    }));
     return response.text?.trim() || "Безымянный";
   } catch (e) {
-    console.error(e);
-    return "Бабай " + Math.floor(Math.random() * 1000);
+    console.error("Name gen error:", e);
+    const names = ["Бабай", "Бука", "Жмых", "Кибер-Леший", "Яга-Бот", "Скрежет"];
+    return names[Math.floor(Math.random() * names.length)] + " " + Math.floor(Math.random() * 100);
   }
 }
 
@@ -57,7 +68,7 @@ export async function generateAvatar(
     Style: ${style}. Additional wishes: ${wishes.join(", ")}. 
     High quality, detailed, atmospheric, slightly comical.`;
 
-    const response = await ai.models.generateContent({
+    const response = await withRetry(() => ai.models.generateContent({
       model: "gemini-2.5-flash-image",
       contents: { parts: [{ text: prompt }] },
       config: {
@@ -65,17 +76,17 @@ export async function generateAvatar(
           aspectRatio: "1:1",
         },
       },
-    });
+    }));
 
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
         return `data:image/png;base64,${part.inlineData.data}`;
       }
     }
-    return "";
+    return "https://i.ibb.co/BVgY7XrT/babai.png";
   } catch (e) {
-    console.error(e);
-    return ""; // Fallback image needed
+    console.error("Avatar gen error:", e);
+    return "https://i.ibb.co/BVgY7XrT/babai.png"; 
   }
 }
 
@@ -85,7 +96,7 @@ export async function generateScenario(
   style: string,
 ): Promise<{ text: string; options: string[]; correctAnswer: number }> {
   try {
-    const response = await ai.models.generateContent({
+    const response = await withRetry(() => ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Ты - ведущий текстовой ролевой игры "Бабай". Игрок - славянский кибер-дух (старик/старуха в пижаме с длинным языком и телекинезом).
       Цель: выгнать жильцов из многоквартирного дома.
@@ -105,21 +116,35 @@ export async function generateScenario(
           required: ["text", "options", "correctAnswer"]
         }
       },
-    });
+    }));
 
     const text = response.text?.trim() || "{}";
     return JSON.parse(text);
   } catch (e) {
-    console.error(e);
-    return {
-      text: "Жилец заперся в ванной и поет песни. Что будешь делать?",
-      options: [
-        "Просунуть длинный язык под дверь",
-        "Использовать телекинез на кран",
-        "Громко завыть",
-      ],
-      correctAnswer: 1,
-    };
+    console.error("Scenario gen error:", e);
+    const fallbacks = [
+      {
+        text: `Этаж ${stage}. Жилец заперся в ванной и поет песни. Что будешь делать?`,
+        options: ["Просунуть длинный язык под дверь", "Использовать телекинез на кран", "Громко завыть"],
+        correctAnswer: 1,
+      },
+      {
+        text: `Этаж ${stage}. Группа подростков вызывает духов в подъезде.`,
+        options: ["Явиться им в пижаме", "Выключить свет во всем доме", "Начать левитировать их телефоны"],
+        correctAnswer: 2,
+      },
+      {
+        text: `Этаж ${stage}. Пожилая пара смотрит телевизор на максимальной громкости.`,
+        options: ["Переключать каналы силой мысли", "Появиться в отражении экрана", "Начать скрипеть половицами"],
+        correctAnswer: 0,
+      },
+      {
+        text: `Этаж ${stage}. Молодой человек пытается уснуть после ночной смены.`,
+        options: ["Шептать ему на ухо системные ошибки", "Заставить кровать вибрировать", "Включить микроволновку на кухне"],
+        correctAnswer: 0,
+      }
+    ];
+    return fallbacks[stage % fallbacks.length];
   }
 }
 
@@ -128,17 +153,23 @@ export async function generateDanilChat(
   style: string,
 ): Promise<string> {
   try {
-    const response = await ai.models.generateContent({
+    const response = await withRetry(() => ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Ты - ДанИИл, дух-начальник (ИИ), который контролирует Бабаев. 
       Стиль общения: строгий, саркастичный, требует отчетов о выселении жильцов. Учитывай стиль мира: ${style}.
       Игрок пишет тебе: "${message}".
       Ответь коротко (1-2 предложения), оцени работу и дай добро на следующий этап, если игрок убедителен.`,
-    });
+    }));
     return response.text?.trim() || "Продолжай работать.";
   } catch (e) {
-    console.error(e);
-    return "Связь прервана. Иди пугай дальше.";
+    console.error("Danil chat error:", e);
+    const replies = [
+      "Слишком много разговоров, Бабай. Иди работай.",
+      "Твои отчеты полны ошибок. Исправь это на следующем этаже.",
+      "Я слежу за тобой. Не разочаруй систему.",
+      "Энергия не бесконечна. Поторопись с выселением."
+    ];
+    return replies[Math.floor(Math.random() * replies.length)];
   }
 }
 
@@ -148,7 +179,7 @@ export async function generateBackgroundImage(
 ): Promise<string> {
   try {
     const prompt = `Background image for a text RPG. A mysterious apartment building interior, floor ${stage}. Style: ${style}. Atmospheric, empty hallways or rooms. No characters.`;
-    const response = await ai.models.generateContent({
+    const response = await withRetry(() => ai.models.generateContent({
       model: "gemini-2.5-flash-image",
       contents: { parts: [{ text: prompt }] },
       config: {
@@ -156,20 +187,17 @@ export async function generateBackgroundImage(
           aspectRatio: "16:9",
         },
       },
-    });
+    }));
 
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
         return `data:image/png;base64,${part.inlineData.data}`;
       }
     }
-    return "";
+    return "https://picsum.photos/seed/spooky/1920/1080?blur=2";
   } catch (e: any) {
-    if (e?.status === 429 || e?.message?.includes("429") || e?.message?.includes("quota")) {
-      console.warn("Image generation Rate limit exceeded.");
-    } else {
-      console.error("Image generation error:", e);
-    }
-    return "";
+    console.warn("Image generation error or Rate limit, using fallback.");
+    return `https://picsum.photos/seed/floor${stage}/1920/1080?blur=2`;
   }
 }
+

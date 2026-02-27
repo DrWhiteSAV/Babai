@@ -38,6 +38,7 @@ export default function Settings() {
       exit={{ opacity: 0, x: -50 }}
       className="flex-1 flex flex-col bg-neutral-950 text-neutral-200 relative overflow-hidden"
     >
+      <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/settingsbg/1080/1920?blur=3')] bg-cover bg-center opacity-20 pointer-events-none mix-blend-overlay" />
       <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
@@ -126,7 +127,19 @@ export default function Settings() {
         </section>
 
         {/* Reset Data */}
-        <section className="pt-8">
+        <section className="pt-8 space-y-4">
+          <button
+            onClick={() => {
+              if (window.confirm("Очистить галерею? Это освободит место в памяти устройства.")) {
+                usePlayerStore.setState({ gallery: [] });
+                alert("Галерея очищена.");
+              }
+            }}
+            className="w-full py-3 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 border border-neutral-800 rounded-xl font-bold transition-colors text-sm"
+          >
+            ОЧИСТИТЬ ГАЛЕРЕЮ
+          </button>
+
           <button
             onClick={() => {
               if (

@@ -27,7 +27,7 @@ export default function GameHub() {
       exit={{ opacity: 0 }}
       className="flex-1 flex flex-col bg-neutral-950 text-neutral-200 relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?q=80&w=1080&auto=format&fit=crop')] bg-cover bg-center opacity-30 pointer-events-none mix-blend-overlay" />
+      <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/spookyhub/1080/1920?blur=2')] bg-cover bg-center opacity-30 pointer-events-none mix-blend-overlay" />
       
       <div className="fog-container">
         <div className="fog-layer"></div>

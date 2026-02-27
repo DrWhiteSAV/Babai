@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePlayerStore } from "../store/playerStore";
+import { usePlayerStore, DEFAULT_IMAGES } from "../store/playerStore";
 import { motion } from "motion/react";
 import { User, ArrowLeft, Copy, Share2, Trophy, Camera, BookOpen, Loader2, Image as ImageIcon } from "lucide-react";
 import * as htmlToImage from 'html-to-image';
@@ -18,11 +18,16 @@ export default function Profile() {
     }
   }, [character]);
 
-  // Ensure avatar is in gallery
+  // Ensure avatar and defaults are in gallery
   useEffect(() => {
     if (character?.avatarUrl && !gallery.includes(character.avatarUrl)) {
       addToGallery(character.avatarUrl);
     }
+    DEFAULT_IMAGES.forEach(img => {
+      if (!gallery.includes(img)) {
+        addToGallery(img);
+      }
+    });
   }, [character, gallery, addToGallery]);
 
   if (!character) {
@@ -67,6 +72,7 @@ export default function Profile() {
       exit={{ opacity: 0, x: -50 }}
       className="flex-1 flex flex-col bg-neutral-950 text-neutral-200 relative overflow-hidden"
     >
+      <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/profilebg/1080/1920?blur=3')] bg-cover bg-center opacity-20 pointer-events-none mix-blend-overlay" />
       <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
@@ -154,6 +160,35 @@ export default function Profile() {
             <span className="text-xs text-neutral-500 uppercase tracking-widest mt-1">
               Уровень Телекинеза
             </span>
+          </div>
+        </section>
+
+        {/* Gallery Preview */}
+        <section className="bg-neutral-900 border border-neutral-800 rounded-2xl p-5">
+          <h3 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2 flex items-center justify-between">
+            <span className="flex items-center gap-2"><ImageIcon size={18} /> Галерея</span>
+            <button 
+              onClick={() => navigate("/gallery")}
+              className="text-xs text-red-500 font-bold hover:underline"
+            >
+              СМОТРЕТЬ ВСЕ
+            </button>
+          </h3>
+          <div className="grid grid-cols-4 gap-2">
+            {gallery.slice(0, 4).map((img, i) => (
+              <div 
+                key={i} 
+                className="aspect-square rounded-lg overflow-hidden border border-neutral-800 cursor-pointer"
+                onClick={() => navigate("/gallery")}
+              >
+                <img src={img} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" crossOrigin="anonymous" />
+              </div>
+            ))}
+            {gallery.length < 4 && Array.from({ length: 4 - gallery.length }).map((_, i) => (
+              <div key={i} className="aspect-square rounded-lg bg-neutral-950 border border-neutral-800 border-dashed flex items-center justify-center text-neutral-800">
+                <ImageIcon size={16} />
+              </div>
+            ))}
           </div>
         </section>
 

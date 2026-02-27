@@ -3,10 +3,11 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { usePlayerStore } from "./store/playerStore";
-import { useEffect } from "react";
-import { useAudio } from "./hooks/useAudio";
+import { useEffect, useRef } from "react";
+import { useAudio, menuMusic, bgMusics } from "./hooks/useAudio";
 
 // Pages
 import Home from "./pages/Home";
@@ -22,7 +23,49 @@ import Gallery from "./pages/Gallery";
 
 function AppContent() {
   const { updateEnergy, settings } = usePlayerStore();
-  const { playClick, playTransition } = useAudio(settings.musicVolume);
+  const { playClick } = useAudio(settings.musicVolume);
+  const location = useLocation();
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (!bgMusicRef.current) {
+      bgMusicRef.current = new Audio();
+      bgMusicRef.current.loop = true;
+    }
+
+    const isGame = location.pathname === "/game";
+    const currentSrc = bgMusicRef.current.src;
+    let targetSrc = menuMusic;
+
+    if (isGame) {
+      const isPlayingGameMusic = bgMusics.some(m => currentSrc.includes(encodeURI(m)) || currentSrc === m);
+      if (!isPlayingGameMusic) {
+        targetSrc = bgMusics[Math.floor(Math.random() * bgMusics.length)];
+      } else {
+        targetSrc = currentSrc;
+      }
+    }
+
+    const normalizedCurrent = currentSrc.replace(window.location.origin, "");
+    const normalizedTarget = targetSrc.replace(window.location.origin, "");
+
+    if (normalizedCurrent !== normalizedTarget || bgMusicRef.current.paused) {
+      bgMusicRef.current.src = targetSrc;
+      bgMusicRef.current.play().catch(() => {});
+    }
+
+    bgMusicRef.current.volume = (settings.musicVolume / 100) * 0.2;
+  }, [location.pathname, settings.musicVolume]);
+
+  useEffect(() => {
+    const handleInteraction = () => {
+      if (bgMusicRef.current && bgMusicRef.current.paused) {
+        bgMusicRef.current.play().catch(() => {});
+      }
+    };
+    document.addEventListener("click", handleInteraction);
+    return () => document.removeEventListener("click", handleInteraction);
+  }, []);
 
   useEffect(() => {
     // Update energy every minute

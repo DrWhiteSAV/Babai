@@ -83,6 +83,14 @@ export interface PlayerState {
 
 const ENERGY_REGEN_RATE = 5 * 60 * 1000; // 5 minutes in ms
 
+export const DEFAULT_IMAGES = [
+  "https://images.unsplash.com/photo-1505635552518-3448ff116af3?q=80&w=1080&auto=format&fit=crop",
+  "https://i.ibb.co/BVgY7XrT/babai.png",
+  "https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?q=80&w=1080&auto=format&fit=crop",
+  "https://picsum.photos/seed/boss/400/400",
+  "https://picsum.photos/seed/babai/400/400"
+];
+
 export const usePlayerStore = create<PlayerState>()(
   persist(
     (set, get) => ({
@@ -92,7 +100,7 @@ export const usePlayerStore = create<PlayerState>()(
       watermelons: 0,
       lastEnergyUpdate: Date.now(),
       inventory: [],
-      gallery: [],
+      gallery: DEFAULT_IMAGES,
       achievements: [],
       friends: [{ name: "ДанИИл", isAiEnabled: true }],
       groupChats: [],
@@ -105,7 +113,13 @@ export const usePlayerStore = create<PlayerState>()(
         fontSize: "medium",
         musicVolume: 50,
       },
-      setCharacter: (char) => set({ character: char }),
+      setCharacter: (char) => {
+        const { addToGallery } = get();
+        set({ character: char });
+        if (char.avatarUrl) {
+          addToGallery(char.avatarUrl);
+        }
+      },
       updateCharacter: (updates) => {
         const { character } = get();
         if (character) set({ character: { ...character, ...updates } });
@@ -168,7 +182,15 @@ export const usePlayerStore = create<PlayerState>()(
       addToGallery: (url) => {
         const { gallery } = get();
         if (!gallery.includes(url)) {
-          set({ gallery: [...gallery, url] });
+          // Drastically limit gallery to 3 images. Base64 strings are huge (~300-500KB each).
+          // 15 images was still too much for the 5MB localStorage limit.
+          const newGallery = [url, ...gallery].slice(0, 3);
+          try {
+            set({ gallery: newGallery });
+          } catch (e) {
+            console.error("Failed to save to localStorage, clearing gallery to save space.");
+            set({ gallery: [url] }); // Try saving only the newest one
+          }
         }
       },
       upgradeTelekinesis: (cost) => {
@@ -220,6 +242,14 @@ export const usePlayerStore = create<PlayerState>()(
     }),
     {
       name: "babai-storage",
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Ensure we don't carry over too many images from previous versions
+          if (state.gallery.length > 3) {
+            state.gallery = state.gallery.slice(0, 3);
+          }
+        }
+      },
     },
   ),
 );

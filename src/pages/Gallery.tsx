@@ -3,10 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { usePlayerStore } from "../store/playerStore";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, Image as ImageIcon, X, Download } from "lucide-react";
+import { useAudio } from "../hooks/useAudio";
 
 export default function Gallery() {
   const navigate = useNavigate();
-  const { gallery } = usePlayerStore();
+  const { gallery, settings } = usePlayerStore();
+  const { playClick } = useAudio(settings.musicVolume);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   return (
@@ -16,6 +18,7 @@ export default function Gallery() {
       exit={{ opacity: 0 }}
       className="flex-1 flex flex-col bg-neutral-950 text-neutral-200 relative overflow-hidden h-screen"
     >
+      <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/gallerybg/1080/1920?blur=3')] bg-cover bg-center opacity-20 pointer-events-none mix-blend-overlay" />
       <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
@@ -33,6 +36,10 @@ export default function Gallery() {
         </h1>
         <div className="w-10" />
       </header>
+
+      <div className="bg-red-900/20 border-b border-red-900/30 p-2 text-[10px] text-center text-red-300 font-mono uppercase tracking-tighter">
+        Память духа ограничена. Хранятся только последние 3 образа.
+      </div>
 
       <div className="flex-1 overflow-y-auto p-4">
         {gallery.length === 0 ? (
@@ -80,6 +87,7 @@ export default function Gallery() {
               className="absolute top-4 right-4 p-2 bg-neutral-800 rounded-full text-white hover:bg-neutral-700 transition-colors z-50"
               onClick={(e) => {
                 e.stopPropagation();
+                playClick();
                 setSelectedImage(null);
               }}
             >
@@ -99,7 +107,10 @@ export default function Gallery() {
                   href={selectedImage}
                   download={`babai_gallery_${Date.now()}.png`}
                   className="flex items-center gap-2 px-4 py-2 bg-red-900 hover:bg-red-800 text-white rounded-full transition-colors text-sm font-medium"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    playClick();
+                  }}
                 >
                   <Download size={16} /> Скачать
                 </a>

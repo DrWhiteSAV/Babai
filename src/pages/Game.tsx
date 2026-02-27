@@ -97,19 +97,16 @@ export default function Game() {
     // Generate background image on stage 1 or every 5th stage
     if (currentStage === 1 || currentStage % 5 === 0) {
       if (character) {
-        if (gallery.length >= 10) {
-          // Reuse existing images
-          const randomBg = gallery[Math.floor(Math.random() * gallery.length)];
-          setBgImage(randomBg);
-        } else {
-          // Generate new
-          generateBackgroundImage(currentStage, character.style).then((newBg) => {
-            if (newBg) {
-              setBgImage(newBg);
-              addToGallery(newBg);
-            }
-          });
-        }
+        // Always try to generate new if possible, but use gallery as fallback
+        generateBackgroundImage(currentStage, character.style).then((newBg) => {
+          if (newBg) {
+            setBgImage(newBg);
+            addToGallery(newBg);
+          } else if (gallery.length > 0) {
+            const randomBg = gallery[Math.floor(Math.random() * gallery.length)];
+            setBgImage(randomBg);
+          }
+        });
       }
     }
 
@@ -136,17 +133,19 @@ export default function Game() {
 
       // Generate spooky voice for the scenario
       generateSpookyVoice(newScenario.text).then((audioData) => {
-        if (audioData && audioRef.current) {
+        // Check if we are still on this stage and not loading
+        if (audioData && audioRef.current && !isLoading) {
           audioRef.current.src = audioData;
           audioRef.current
             .play()
             .catch((e) => console.log("Audio play blocked", e));
-        } else {
-          // Fallback to browser TTS if API fails (e.g., rate limit)
+        } else if (!audioData && !isLoading) {
+          // Fallback to browser TTS if API fails
           if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Stop any previous speech
             const utterance = new SpeechSynthesisUtterance(newScenario.text);
             utterance.lang = 'ru-RU';
-            utterance.pitch = 0.5; // Make it sound a bit deeper/spookier
+            utterance.pitch = 0.5;
             utterance.rate = 0.9;
             window.speechSynthesis.speak(utterance);
           }
@@ -161,6 +160,10 @@ export default function Game() {
 
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
     }
 
     if (index === scenario.correctAnswer) {
