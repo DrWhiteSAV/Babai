@@ -1,5 +1,6 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePlayerStore } from "../store/playerStore";
+import { usePlayerStore, ENERGY_REGEN_RATE } from "../store/playerStore";
 import { motion } from "motion/react";
 import {
   Play,
@@ -13,12 +14,32 @@ import {
 
 export default function GameHub() {
   const navigate = useNavigate();
-  const { character, fear, energy, watermelons } = usePlayerStore();
+  const { character, fear, energy, watermelons, lastEnergyUpdate } = usePlayerStore();
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = Date.now();
+      const diff = now - lastEnergyUpdate;
+      const remaining = ENERGY_REGEN_RATE - (diff % ENERGY_REGEN_RATE);
+      setTimeLeft(Math.floor(remaining / 1000));
+    };
+
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(interval);
+  }, [lastEnergyUpdate]);
 
   if (!character) {
     navigate("/");
     return null;
   }
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
 
   return (
     <motion.div
@@ -37,11 +58,16 @@ export default function GameHub() {
       {/* Header Stats */}
       <header className="flex items-center justify-between p-4 bg-neutral-900/80 backdrop-blur-md border-b border-neutral-800 sticky top-0 z-20">
         <div className="flex gap-4">
-          <div className="flex items-center gap-1 text-yellow-500 font-mono font-bold">
-            <Zap size={16} className="fill-yellow-500" /> {energy}
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex items-center gap-1 text-yellow-500 font-mono font-bold">
+              <Zap size={16} /> {energy}
+            </div>
+            <div className="text-[10px] text-yellow-500/70 font-mono font-bold -mt-1">
+              {formatTime(timeLeft)}
+            </div>
           </div>
           <div className="flex items-center gap-1 text-red-500 font-mono font-bold">
-            <Skull size={16} className="fill-red-500" /> {fear}
+            <Skull size={16} /> {fear}
           </div>
           <div className="flex items-center gap-1 text-green-500 font-mono font-bold">
             🍉 {watermelons}

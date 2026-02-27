@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePlayerStore } from "../store/playerStore";
+import { usePlayerStore, ENERGY_REGEN_RATE } from "../store/playerStore";
 import {
   generateScenario,
   generateDanilChat,
@@ -31,7 +31,7 @@ interface Scenario {
 
 export default function Game() {
   const navigate = useNavigate();
-  const { character, fear, energy, useEnergy, addFear, settings, gallery, addToGallery, addWatermelons, inventory, watermelons } =
+  const { character, fear, energy, useEnergy, addFear, settings, gallery, addToGallery, addWatermelons, inventory, watermelons, lastEnergyUpdate } =
     usePlayerStore();
 
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
@@ -44,6 +44,20 @@ export default function Game() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [showScreamer, setShowScreamer] = useState(false);
   const [showSuccessAvatar, setShowSuccessAvatar] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = Date.now();
+      const diff = now - lastEnergyUpdate;
+      const remaining = ENERGY_REGEN_RATE - (diff % ENERGY_REGEN_RATE);
+      setTimeLeft(Math.floor(remaining / 1000));
+    };
+
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(interval);
+  }, [lastEnergyUpdate]);
 
   // Result State
   const [isResultView, setIsResultView] = useState(false);
@@ -292,6 +306,12 @@ export default function Game() {
     loadNextStage(nextStage);
   };
 
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
   if (isGameOver) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 bg-neutral-950 text-white text-center">
@@ -331,9 +351,14 @@ export default function Game() {
             <X size={20} />
           </button>
           <div className="flex gap-4 font-mono font-bold">
-            <span className="text-yellow-500 flex items-center gap-1">
-              <Zap size={16} /> {energy}
-            </span>
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-yellow-500 flex items-center gap-1">
+                <Zap size={16} /> {energy}
+              </span>
+              <div className="text-[10px] text-yellow-500/70 font-mono font-bold -mt-1">
+                {formatTime(timeLeft)}
+              </div>
+            </div>
             <span className="text-red-500 flex items-center gap-1">
               <Skull size={16} /> {fear}
             </span>

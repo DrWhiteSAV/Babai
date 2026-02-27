@@ -82,7 +82,7 @@ export interface PlayerState {
   completeQuest: (id: string) => void;
 }
 
-const ENERGY_REGEN_RATE = 5 * 60 * 1000; // 5 minutes in ms
+export const ENERGY_REGEN_RATE = 5 * 60 * 1000; // 5 minutes in ms
 
 export const DEFAULT_IMAGES = [
   "https://images.unsplash.com/photo-1505635552518-3448ff116af3?q=80&w=1080&auto=format&fit=crop",

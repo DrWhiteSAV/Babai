@@ -8,7 +8,7 @@ import { generateLore } from "../services/geminiService";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { character, fear, energy, inventory, updateCharacter, gallery, addToGallery, settings, updateSettings } = usePlayerStore();
+  const { character, fear, energy, watermelons, inventory, updateCharacter, gallery, addToGallery, settings, updateSettings } = usePlayerStore();
   const profileRef = useRef<HTMLDivElement>(null);
   const [isGeneratingLore, setIsGeneratingLore] = useState(false);
 
@@ -142,20 +142,26 @@ export default function Profile() {
         </section>
 
         {/* Stats */}
-        <section className="grid grid-cols-2 gap-4">
+        <section className="grid grid-cols-3 gap-4">
           <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex flex-col items-center justify-center">
             <span className="text-3xl font-black text-white">{fear}</span>
-            <span className="text-xs text-neutral-500 uppercase tracking-widest mt-1">
+            <span className="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">
               Страх
             </span>
           </div>
           <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex flex-col items-center justify-center">
             <span className="text-3xl font-black text-white">{energy}</span>
-            <span className="text-xs text-neutral-500 uppercase tracking-widest mt-1">
+            <span className="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">
               Энергия
             </span>
           </div>
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex flex-col items-center justify-center col-span-2">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex flex-col items-center justify-center">
+            <span className="text-3xl font-black text-white">{watermelons}</span>
+            <span className="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">
+              Арбузы
+            </span>
+          </div>
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex flex-col items-center justify-center col-span-3">
             <span className="text-3xl font-black text-white">
               {character.telekinesisLevel}
             </span>
