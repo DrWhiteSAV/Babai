@@ -11,6 +11,7 @@ const SHOP_ITEMS = [
     name: 'Парик "Одуванчик"',
     type: "Аксессуар",
     cost: 10,
+    currency: "fear",
     icon: "💇‍♂️",
   },
   {
@@ -18,6 +19,7 @@ const SHOP_ITEMS = [
     name: "Ржавые зубы",
     type: "Аксессуар",
     cost: 15,
+    currency: "fear",
     icon: "🦷",
   },
   {
@@ -25,6 +27,7 @@ const SHOP_ITEMS = [
     name: "Кровавая пижама",
     type: "Одежда",
     cost: 25,
+    currency: "fear",
     icon: "👕",
   },
   {
@@ -32,6 +35,7 @@ const SHOP_ITEMS = [
     name: "Раздвоенный язык",
     type: "Мутация",
     cost: 50,
+    currency: "fear",
     icon: "👅",
   },
   {
@@ -39,13 +43,65 @@ const SHOP_ITEMS = [
     name: "Ржавая труба",
     type: "Оружие",
     cost: 100,
+    currency: "fear",
     icon: "🔧",
+  },
+];
+
+const BOSS_ITEMS = [
+  {
+    id: "pajama_home",
+    name: "Домашняя пижама",
+    type: "Пижама (+1 сек к боссу)",
+    cost: 25,
+    currency: "watermelons",
+    icon: "🏠",
+  },
+  {
+    id: "pajama_forest",
+    name: "Лесная пижама",
+    type: "Пижама (+5 сек к боссу)",
+    cost: 250,
+    currency: "watermelons",
+    icon: "🌲",
+  },
+  {
+    id: "pajama_star",
+    name: "Звездная пижама",
+    type: "Пижама (+15 сек к боссу)",
+    cost: 2500,
+    currency: "watermelons",
+    icon: "⭐",
+  },
+  {
+    id: "tongue_frog",
+    name: "Язык лягушки",
+    type: "Язык (Урон боссу: 2)",
+    cost: 100,
+    currency: "watermelons",
+    icon: "🐸",
+  },
+  {
+    id: "tongue_anteater",
+    name: "Язык муравьеда",
+    type: "Язык (Урон боссу: 3)",
+    cost: 500,
+    currency: "watermelons",
+    icon: "🐜",
+  },
+  {
+    id: "tongue_chameleon",
+    name: "Язык хамелеона",
+    type: "Язык (Урон боссу: 4)",
+    cost: 5000,
+    currency: "watermelons",
+    icon: "🦎",
   },
 ];
 
 export default function Shop() {
   const navigate = useNavigate();
-  const { fear, inventory, buyItem, upgradeTelekinesis, character, updateCharacter, addToGallery } =
+  const { fear, watermelons, inventory, buyItem, upgradeTelekinesis, character, updateCharacter, addToGallery } =
     usePlayerStore();
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -55,7 +111,10 @@ export default function Shop() {
       return;
     }
     
-    if (fear < item.cost) {
+    if (item.currency === "watermelons" && watermelons < item.cost) {
+      alert("Недостаточно арбузов!");
+      return;
+    } else if (item.currency === "fear" && fear < item.cost) {
       alert("Недостаточно страха!");
       return;
     }
@@ -67,7 +126,7 @@ export default function Shop() {
       addToGallery(character.avatarUrl);
     }
 
-    const success = buyItem(item.id, item.cost);
+    const success = buyItem(item.id, item.cost, item.currency);
     if (success && character) {
       // Edit avatar
       const newAvatar = await editAvatarWithItem(character.avatarUrl, item.name);
@@ -111,8 +170,13 @@ export default function Shop() {
         <h1 className="text-xl font-bold uppercase tracking-widest flex items-center gap-2">
           <ShoppingCart size={20} /> Магазин
         </h1>
-        <div className="flex items-center gap-1 text-red-500 font-mono font-bold">
-          <Skull size={16} /> {fear}
+        <div className="flex gap-4">
+          <div className="flex items-center gap-1 text-red-500 font-mono font-bold">
+            <Skull size={16} /> {fear}
+          </div>
+          <div className="flex items-center gap-1 text-green-500 font-mono font-bold">
+            🍉 {watermelons}
+          </div>
         </div>
       </header>
 
@@ -156,7 +220,7 @@ export default function Shop() {
         {/* Items */}
         <section>
           <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2">
-            Товары
+            Товары за Страх
           </h2>
           <div className="grid grid-cols-1 gap-3">
             {SHOP_ITEMS.map((item) => {
@@ -191,6 +255,53 @@ export default function Shop() {
                     ) : (
                       <>
                         <Skull size={14} /> {item.cost}
+                      </>
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Boss Items */}
+        <section>
+          <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2">
+            Экипировка для Боссов
+          </h2>
+          <div className="grid grid-cols-1 gap-3">
+            {BOSS_ITEMS.map((item) => {
+              const isOwned = inventory.includes(item.id);
+              return (
+                <div
+                  key={item.id}
+                  className={`bg-neutral-900 border ${isOwned ? "border-green-900/50 opacity-70" : "border-neutral-800"} rounded-2xl p-4 flex items-center justify-between transition-colors`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-neutral-800 flex items-center justify-center text-2xl">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-white">{item.name}</h3>
+                      <p className="text-xs text-neutral-400">{item.type}</p>
+                    </div>
+                  </div>
+                  <button
+                    disabled={isOwned || isProcessing}
+                    onClick={() => handleBuy(item)}
+                    className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 ${
+                      isOwned
+                        ? "bg-green-900/20 text-green-500 border border-green-900/30"
+                        : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
+                    }`}
+                  >
+                    {isOwned ? (
+                      "Куплено"
+                    ) : isProcessing ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <>
+                        🍉 {item.cost}
                       </>
                     )}
                   </button>

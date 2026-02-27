@@ -13,7 +13,7 @@ import {
 
 export default function GameHub() {
   const navigate = useNavigate();
-  const { character, fear, energy } = usePlayerStore();
+  const { character, fear, energy, watermelons } = usePlayerStore();
 
   if (!character) {
     navigate("/");
@@ -42,6 +42,9 @@ export default function GameHub() {
           </div>
           <div className="flex items-center gap-1 text-red-500 font-mono font-bold">
             <Skull size={16} className="fill-red-500" /> {fear}
+          </div>
+          <div className="flex items-center gap-1 text-green-500 font-mono font-bold">
+            🍉 {watermelons}
           </div>
         </div>
         <div className="flex gap-3">

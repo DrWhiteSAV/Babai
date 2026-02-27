@@ -31,7 +31,7 @@ interface Scenario {
 
 export default function Game() {
   const navigate = useNavigate();
-  const { character, fear, energy, useEnergy, addFear, settings, gallery, addToGallery, addWatermelons } =
+  const { character, fear, energy, useEnergy, addFear, settings, gallery, addToGallery, addWatermelons, inventory, watermelons } =
     usePlayerStore();
 
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
@@ -122,6 +122,20 @@ export default function Game() {
     await loadNextStage(1);
   };
 
+  const getBossTimeBonus = () => {
+    if (inventory.includes("pajama_star")) return 15;
+    if (inventory.includes("pajama_forest")) return 5;
+    if (inventory.includes("pajama_home")) return 1;
+    return 0;
+  };
+
+  const getTapDamage = () => {
+    if (inventory.includes("tongue_chameleon")) return 4;
+    if (inventory.includes("tongue_anteater")) return 3;
+    if (inventory.includes("tongue_frog")) return 2;
+    return 1;
+  };
+
   const loadNextStage = async (currentStage: number) => {
     setIsLoading(true);
     setIsResultView(false);
@@ -130,7 +144,7 @@ export default function Game() {
     if (currentStage === 16 || currentStage === 46) {
       setIsBossBattle(true);
       setBossTaps(0);
-      setBossTimer(30);
+      setBossTimer(30 + getBossTimeBonus());
       setIsBossDefeated(false);
       if (character) {
         const bImg = await generateBossImage(currentStage, character.style);
@@ -247,7 +261,7 @@ export default function Game() {
 
   const handleBossTap = () => {
     if (isBossDefeated) return;
-    const newTaps = bossTaps + 1;
+    const newTaps = bossTaps + getTapDamage();
     setBossTaps(newTaps);
     if (newTaps >= 100) {
       setIsBossDefeated(true);
@@ -322,6 +336,9 @@ export default function Game() {
             </span>
             <span className="text-red-500 flex items-center gap-1">
               <Skull size={16} /> {fear}
+            </span>
+            <span className="text-green-500 flex items-center gap-1">
+              🍉 {watermelons}
             </span>
           </div>
         </header>
@@ -438,6 +455,9 @@ export default function Game() {
         <div className="flex gap-3 font-mono font-bold text-sm">
           <span className="text-red-500 flex items-center gap-1">
             <Skull size={14} /> {fear}
+          </span>
+          <span className="text-green-500 flex items-center gap-1">
+            🍉 {watermelons}
           </span>
         </div>
       </header>
