@@ -11,11 +11,13 @@ import {
   Skull,
   Users,
 } from "lucide-react";
+import CurrencyModal, { CurrencyType } from "../components/CurrencyModal";
 
 export default function GameHub() {
   const navigate = useNavigate();
   const { character, fear, energy, watermelons, lastEnergyUpdate } = usePlayerStore();
   const [timeLeft, setTimeLeft] = useState(0);
+  const [infoModal, setInfoModal] = useState<CurrencyType>(null);
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -58,7 +60,10 @@ export default function GameHub() {
       {/* Header Stats */}
       <header className="flex items-center justify-between p-4 bg-neutral-900/80 backdrop-blur-md border-b border-neutral-800 sticky top-0 z-20">
         <div className="flex gap-4">
-          <div className="flex flex-col items-center justify-center">
+          <div 
+            className="flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => setInfoModal('energy')}
+          >
             <div className="flex items-center gap-1 text-yellow-500 font-mono font-bold">
               <Zap size={16} /> {energy}
             </div>
@@ -66,10 +71,16 @@ export default function GameHub() {
               {formatTime(timeLeft)}
             </div>
           </div>
-          <div className="flex items-center gap-1 text-red-500 font-mono font-bold">
+          <div 
+            className="flex items-center gap-1 text-red-500 font-mono font-bold cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => setInfoModal('fear')}
+          >
             <Skull size={16} /> {fear}
           </div>
-          <div className="flex items-center gap-1 text-green-500 font-mono font-bold">
+          <div 
+            className="flex items-center gap-1 text-green-500 font-mono font-bold cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => setInfoModal('watermelons')}
+          >
             🍉 {watermelons}
           </div>
         </div>
@@ -152,6 +163,8 @@ export default function GameHub() {
           </button>
         </div>
       </div>
+
+      <CurrencyModal type={infoModal} onClose={() => setInfoModal(null)} />
     </motion.div>
   );
 }

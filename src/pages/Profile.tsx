@@ -5,12 +5,14 @@ import { motion } from "motion/react";
 import { User, ArrowLeft, Copy, Share2, Trophy, Camera, BookOpen, Loader2, Image as ImageIcon, Volume2, VolumeX } from "lucide-react";
 import * as htmlToImage from 'html-to-image';
 import { generateLore } from "../services/geminiService";
+import CurrencyModal, { CurrencyType } from "../components/CurrencyModal";
 
 export default function Profile() {
   const navigate = useNavigate();
   const { character, fear, energy, watermelons, inventory, updateCharacter, gallery, addToGallery, settings, updateSettings } = usePlayerStore();
   const profileRef = useRef<HTMLDivElement>(null);
   const [isGeneratingLore, setIsGeneratingLore] = useState(false);
+  const [infoModal, setInfoModal] = useState<CurrencyType>(null);
 
   useEffect(() => {
     if (character && !character.lore && !isGeneratingLore) {
@@ -143,19 +145,28 @@ export default function Profile() {
 
         {/* Stats */}
         <section className="grid grid-cols-3 gap-4">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex flex-col items-center justify-center">
+          <div 
+            className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-neutral-600 transition-colors"
+            onClick={() => setInfoModal('fear')}
+          >
             <span className="text-3xl font-black text-white">{fear}</span>
             <span className="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">
               Страх
             </span>
           </div>
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex flex-col items-center justify-center">
+          <div 
+            className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-neutral-600 transition-colors"
+            onClick={() => setInfoModal('energy')}
+          >
             <span className="text-3xl font-black text-white">{energy}</span>
             <span className="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">
               Энергия
             </span>
           </div>
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex flex-col items-center justify-center">
+          <div 
+            className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-neutral-600 transition-colors"
+            onClick={() => setInfoModal('watermelons')}
+          >
             <span className="text-3xl font-black text-white">{watermelons}</span>
             <span className="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">
               Арбузы
@@ -265,6 +276,8 @@ export default function Profile() {
           </div>
         </section>
       </div>
+
+      <CurrencyModal type={infoModal} onClose={() => setInfoModal(null)} />
     </motion.div>
   );
 }
