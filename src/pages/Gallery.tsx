@@ -38,7 +38,7 @@ export default function Gallery() {
       </header>
 
       <div className="bg-red-900/20 border-b border-red-900/30 p-2 text-[10px] text-center text-red-300 font-mono uppercase tracking-tighter">
-        Память духа ограничена. Хранятся только последние 3 образа.
+        Память духа ограничена. Хранятся только последние 6 образов.
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">

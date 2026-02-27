@@ -6,6 +6,7 @@ import {
   Settings as SettingsIcon,
   ArrowLeft,
   Volume2,
+  VolumeX,
   Type,
   Square,
 } from "lucide-react";
@@ -100,6 +101,19 @@ export default function Settings() {
               </button>
             ))}
           </div>
+        </section>
+
+        {/* TTS Toggle */}
+        <section>
+          <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2 flex items-center gap-2">
+            {settings.ttsEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />} Озвучка текста
+          </h2>
+          <button
+            onClick={() => updateSettings({ ttsEnabled: !settings.ttsEnabled })}
+            className={`w-full p-4 rounded-xl border font-bold transition-all flex items-center justify-center gap-2 ${settings.ttsEnabled ? "border-green-600 bg-green-900/30 text-green-400" : "border-neutral-800 bg-neutral-900 text-neutral-500"}`}
+          >
+            {settings.ttsEnabled ? "ВКЛЮЧЕНА" : "ВЫКЛЮЧЕНА"}
+          </button>
         </section>
 
         {/* Music Volume */}

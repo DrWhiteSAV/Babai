@@ -2,13 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlayerStore, DEFAULT_IMAGES } from "../store/playerStore";
 import { motion } from "motion/react";
-import { User, ArrowLeft, Copy, Share2, Trophy, Camera, BookOpen, Loader2, Image as ImageIcon } from "lucide-react";
+import { User, ArrowLeft, Copy, Share2, Trophy, Camera, BookOpen, Loader2, Image as ImageIcon, Volume2, VolumeX } from "lucide-react";
 import * as htmlToImage from 'html-to-image';
 import { generateLore } from "../services/geminiService";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { character, fear, energy, inventory, updateCharacter, gallery, addToGallery } = usePlayerStore();
+  const { character, fear, energy, inventory, updateCharacter, gallery, addToGallery, settings, updateSettings } = usePlayerStore();
   const profileRef = useRef<HTMLDivElement>(null);
   const [isGeneratingLore, setIsGeneratingLore] = useState(false);
 
@@ -18,17 +18,12 @@ export default function Profile() {
     }
   }, [character]);
 
-  // Ensure avatar and defaults are in gallery
+  // Ensure avatar is in gallery
   useEffect(() => {
     if (character?.avatarUrl && !gallery.includes(character.avatarUrl)) {
       addToGallery(character.avatarUrl);
     }
-    DEFAULT_IMAGES.forEach(img => {
-      if (!gallery.includes(img)) {
-        addToGallery(img);
-      }
-    });
-  }, [character, gallery, addToGallery]);
+  }, [character?.avatarUrl]);
 
   if (!character) {
     navigate("/");
@@ -89,6 +84,13 @@ export default function Profile() {
           <User size={20} /> Профиль
         </h1>
         <div className="flex gap-2">
+          <button
+            onClick={() => updateSettings({ ttsEnabled: !settings.ttsEnabled })}
+            className={`p-2 rounded-full transition-colors ${settings.ttsEnabled ? 'text-green-500 hover:bg-neutral-800' : 'text-neutral-500 hover:bg-neutral-800'}`}
+            title={settings.ttsEnabled ? "Озвучка включена" : "Озвучка выключена"}
+          >
+            {settings.ttsEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+          </button>
           <button
             onClick={() => navigate("/gallery")}
             className="p-2 hover:bg-neutral-800 rounded-full transition-colors text-neutral-400"

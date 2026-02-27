@@ -6,6 +6,7 @@ import {
   generateDanilChat,
   generateBackgroundImage,
   generateSpookyVoice,
+  generateBossImage,
 } from "../services/ai";
 import { playScreamer, playSuccess, playClick } from "../services/sfx";
 import { motion, AnimatePresence } from "motion/react";
@@ -24,11 +25,13 @@ interface Scenario {
   text: string;
   options: string[];
   correctAnswer: number;
+  successText: string;
+  failureText: string;
 }
 
 export default function Game() {
   const navigate = useNavigate();
-  const { character, fear, energy, useEnergy, addFear, settings, gallery, addToGallery } =
+  const { character, fear, energy, useEnergy, addFear, settings, gallery, addToGallery, addWatermelons } =
     usePlayerStore();
 
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
@@ -42,7 +45,20 @@ export default function Game() {
   const [showScreamer, setShowScreamer] = useState(false);
   const [showSuccessAvatar, setShowSuccessAvatar] = useState(false);
 
+  // Result State
+  const [isResultView, setIsResultView] = useState(false);
+  const [resultText, setResultText] = useState("");
+  const [lastChoiceCorrect, setLastChoiceCorrect] = useState(false);
+
+  // Boss Battle State
+  const [isBossBattle, setIsBossBattle] = useState(false);
+  const [bossTaps, setBossTaps] = useState(0);
+  const [bossTimer, setBossTimer] = useState(30);
+  const [bossImage, setBossImage] = useState("");
+  const [isBossDefeated, setIsBossDefeated] = useState(false);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const bossTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Danil Chat State
   const [isDanilChat, setIsDanilChat] = useState(false);
@@ -74,6 +90,21 @@ export default function Game() {
     }
   }, [chatMessages]);
 
+  useEffect(() => {
+    if (isBossBattle && bossTimer > 0 && !isBossDefeated) {
+      bossTimerRef.current = setTimeout(() => setBossTimer(t => t - 1), 1000);
+    } else if (bossTimer === 0 && !isBossDefeated) {
+      alert("Время вышло! Босс оказался сильнее...");
+      setIsBossBattle(false);
+      const nextStage = stage + 1;
+      setStage(nextStage);
+      loadNextStage(nextStage);
+    }
+    return () => {
+      if (bossTimerRef.current) clearTimeout(bossTimerRef.current);
+    };
+  }, [isBossBattle, bossTimer, isBossDefeated]);
+
   const startGame = async (diff: Difficulty) => {
     const cost = diff === "Сложная" ? 1 : diff === "Невозможная" ? 5 : 25;
     if (!useEnergy(cost)) {
@@ -93,6 +124,21 @@ export default function Game() {
 
   const loadNextStage = async (currentStage: number) => {
     setIsLoading(true);
+    setIsResultView(false);
+
+    // Boss Battle check (stages 16 and 46)
+    if (currentStage === 16 || currentStage === 46) {
+      setIsBossBattle(true);
+      setBossTaps(0);
+      setBossTimer(30);
+      setIsBossDefeated(false);
+      if (character) {
+        const bImg = await generateBossImage(currentStage, character.style);
+        setBossImage(bImg);
+      }
+      setIsLoading(false);
+      return;
+    }
 
     // Generate background image on stage 1 or every 5th stage
     if (currentStage === 1 || currentStage % 5 === 0) {
@@ -132,25 +178,27 @@ export default function Game() {
       setScenario(newScenario);
 
       // Generate spooky voice for the scenario
-      generateSpookyVoice(newScenario.text).then((audioData) => {
-        // Check if we are still on this stage and not loading
-        if (audioData && audioRef.current && !isLoading) {
-          audioRef.current.src = audioData;
-          audioRef.current
-            .play()
-            .catch((e) => console.log("Audio play blocked", e));
-        } else if (!audioData && !isLoading) {
-          // Fallback to browser TTS if API fails
-          if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel(); // Stop any previous speech
-            const utterance = new SpeechSynthesisUtterance(newScenario.text);
-            utterance.lang = 'ru-RU';
-            utterance.pitch = 0.5;
-            utterance.rate = 0.9;
-            window.speechSynthesis.speak(utterance);
+      if (settings.ttsEnabled) {
+        generateSpookyVoice(newScenario.text).then((audioData) => {
+          // Check if we are still on this stage and not loading
+          if (audioData && audioRef.current && !isLoading) {
+            audioRef.current.src = audioData;
+            audioRef.current
+              .play()
+              .catch((e) => console.log("Audio play blocked", e));
+          } else if (!audioData && !isLoading) {
+            // Fallback to browser TTS if API fails
+            if ('speechSynthesis' in window) {
+              window.speechSynthesis.cancel(); // Stop any previous speech
+              const utterance = new SpeechSynthesisUtterance(newScenario.text);
+              utterance.lang = 'ru-RU';
+              utterance.pitch = 0.5;
+              utterance.rate = 0.9;
+              window.speechSynthesis.speak(utterance);
+            }
           }
-        }
-      });
+        });
+      }
     }
     setIsLoading(false);
   };
@@ -166,7 +214,11 @@ export default function Game() {
       audioRef.current.src = "";
     }
 
-    if (index === scenario.correctAnswer) {
+    const isCorrect = index === scenario.correctAnswer;
+    setLastChoiceCorrect(isCorrect);
+    setResultText(isCorrect ? scenario.successText : scenario.failureText);
+
+    if (isCorrect) {
       addFear(1);
       setScore((s) => s + 1);
       playSuccess(settings.musicVolume);
@@ -180,12 +232,27 @@ export default function Game() {
       setShowScreamer(false);
     }
 
+    setIsResultView(true);
+  };
+
+  const nextAfterResult = () => {
     const nextStage = stage + 1;
     if (nextStage > maxStages) {
       setIsGameOver(true);
     } else {
       setStage(nextStage);
       loadNextStage(nextStage);
+    }
+  };
+
+  const handleBossTap = () => {
+    if (isBossDefeated) return;
+    const newTaps = bossTaps + 1;
+    setBossTaps(newTaps);
+    if (newTaps >= 100) {
+      setIsBossDefeated(true);
+      addWatermelons(25);
+      playSuccess(settings.musicVolume);
     }
   };
 
@@ -397,6 +464,62 @@ export default function Game() {
                 Генерация кошмара...
               </p>
             </motion.div>
+          ) : isBossBattle ? (
+            <motion.div
+              key="boss"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex-1 flex flex-col items-center justify-center"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-black text-red-600 uppercase tracking-tighter mb-2">БИТВА С БОССОМ</h3>
+                <div className="flex gap-4 justify-center font-mono">
+                  <span className="text-yellow-500">ВРЕМЯ: {bossTimer}с</span>
+                  <span className="text-red-500">УДАРЫ: {bossTaps}/100</span>
+                </div>
+              </div>
+
+              <div 
+                onClick={handleBossTap}
+                className="relative w-64 h-64 md:w-80 md:h-80 rounded-3xl overflow-hidden border-4 border-red-900 shadow-[0_0_50px_rgba(220,38,38,0.4)] cursor-pointer active:scale-95 transition-transform"
+              >
+                <img 
+                  src={bossImage || "https://picsum.photos/seed/boss/800/800"} 
+                  alt="Boss" 
+                  className="w-full h-full object-cover"
+                />
+                {isBossDefeated && (
+                  <div className="absolute inset-0 bg-green-500/40 flex items-center justify-center">
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="text-white font-black text-4xl uppercase"
+                    >
+                      ПОБЕДА!
+                    </motion.div>
+                  </div>
+                )}
+              </div>
+
+              {isBossDefeated ? (
+                <div className="mt-8 text-center space-y-4">
+                  <p className="text-green-400 font-bold">Вы одолели босса и получили 25 кг арбуза!</p>
+                  <button
+                    onClick={() => {
+                      setIsBossBattle(false);
+                      const nextStage = stage + 1;
+                      setStage(nextStage);
+                      loadNextStage(nextStage);
+                    }}
+                    className="px-8 py-4 bg-red-700 hover:bg-red-600 text-white rounded-xl font-bold flex items-center gap-2"
+                  >
+                    ИДТИ ДАЛЬШЕ <ArrowRight size={18} />
+                  </button>
+                </div>
+              ) : (
+                <p className="mt-6 text-neutral-400 animate-pulse">ТАПАЙ ПО БОССУ!</p>
+              )}
+            </motion.div>
           ) : isDanilChat ? (
             <motion.div
               key="chat"
@@ -468,6 +591,27 @@ export default function Game() {
                   </button>
                 </div>
               )}
+            </motion.div>
+          ) : isResultView ? (
+            <motion.div
+              key="result"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="flex-1 flex flex-col items-center justify-center text-center"
+            >
+              <div className={`text-2xl font-black mb-6 uppercase tracking-widest ${lastChoiceCorrect ? 'text-green-500' : 'text-red-500'}`}>
+                {lastChoiceCorrect ? 'УСПЕХ' : 'ПРОВАЛ'}
+              </div>
+              <p className="text-lg md:text-xl leading-relaxed mb-12 italic font-serif">
+                {resultText}
+              </p>
+              <button
+                onClick={nextAfterResult}
+                className="w-full py-4 bg-red-700 hover:bg-red-600 text-white rounded-xl font-bold flex items-center justify-center gap-2"
+              >
+                ПРОДОЛЖИТЬ <ArrowRight size={18} />
+              </button>
             </motion.div>
           ) : scenario ? (
             <motion.div

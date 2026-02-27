@@ -94,7 +94,7 @@ export async function generateScenario(
   stage: number,
   difficulty: string,
   style: string,
-): Promise<{ text: string; options: string[]; correctAnswer: number }> {
+): Promise<{ text: string; options: string[]; correctAnswer: number; successText: string; failureText: string }> {
   try {
     const response = await withRetry(() => ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -103,7 +103,8 @@ export async function generateScenario(
       Стиль игры: ${style}. Этап: ${stage}. Сложность: ${difficulty}.
       
       Опиши текущую ситуацию (коротко, 2-3 предложения), где Бабай пугает очередного жильца (или группу).
-      Затем предложи 3 варианта действий для игрока. Только один вариант должен быть правильным (успешным) для выселения, остальные ведут к провалу или задержке.`,
+      Затем предложи 3 варианта действий для игрока. Только один вариант должен быть правильным (успешным) для выселения, остальные ведут к провалу.
+      Также напиши текст результата: что произошло при успехе (successText) и что произошло при провале (failureText).`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -111,9 +112,11 @@ export async function generateScenario(
           properties: {
             text: { type: Type.STRING, description: "Описание ситуации" },
             options: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3 варианта действий" },
-            correctAnswer: { type: Type.INTEGER, description: "Индекс правильного варианта (0, 1 или 2)" }
+            correctAnswer: { type: Type.INTEGER, description: "Индекс правильного варианта (0, 1 или 2)" },
+            successText: { type: Type.STRING, description: "Текст при правильном выборе" },
+            failureText: { type: Type.STRING, description: "Текст при неправильном выборе" }
           },
-          required: ["text", "options", "correctAnswer"]
+          required: ["text", "options", "correctAnswer", "successText", "failureText"]
         }
       },
     }));
@@ -127,24 +130,46 @@ export async function generateScenario(
         text: `Этаж ${stage}. Жилец заперся в ванной и поет песни. Что будешь делать?`,
         options: ["Просунуть длинный язык под дверь", "Использовать телекинез на кран", "Громко завыть"],
         correctAnswer: 1,
+        successText: "Вода внезапно стала ледяной, а потом закипела! Жилец выскочил из ванной в ужасе.",
+        failureText: "Жилец просто начал петь громче, игнорируя твои попытки."
       },
       {
         text: `Этаж ${stage}. Группа подростков вызывает духов в подъезде.`,
         options: ["Явиться им в пижаме", "Выключить свет во всем доме", "Начать левитировать их телефоны"],
         correctAnswer: 2,
-      },
-      {
-        text: `Этаж ${stage}. Пожилая пара смотрит телевизор на максимальной громкости.`,
-        options: ["Переключать каналы силой мысли", "Появиться в отражении экрана", "Начать скрипеть половицами"],
-        correctAnswer: 0,
-      },
-      {
-        text: `Этаж ${stage}. Молодой человек пытается уснуть после ночной смены.`,
-        options: ["Шептать ему на ухо системные ошибки", "Заставить кровать вибрировать", "Включить микроволновку на кухне"],
-        correctAnswer: 0,
+        successText: "Телефоны взмыли в воздух и начали транслировать помехи. Подростки разбежались, роняя кепки.",
+        failureText: "Они приняли тебя за косплеера и начали делать селфи. Какой позор."
       }
     ];
     return fallbacks[stage % fallbacks.length];
+  }
+}
+
+export async function generateBossImage(
+  stage: number,
+  style: string,
+): Promise<string> {
+  try {
+    const prompt = `A terrifying and massive boss monster for a Slavic cyber-horror game. It is a corrupted version of a building manager or a giant mechanical spider-like spirit. Style: ${style}. Epic, scary, detailed, high quality.`;
+    const response = await withRetry(() => ai.models.generateContent({
+      model: "gemini-2.5-flash-image",
+      contents: { parts: [{ text: prompt }] },
+      config: {
+        imageConfig: {
+          aspectRatio: "1:1",
+        },
+      },
+    }));
+
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        return `data:image/png;base64,${part.inlineData.data}`;
+      }
+    }
+    return "https://picsum.photos/seed/boss/800/800";
+  } catch (e) {
+    console.error("Boss image gen error:", e);
+    return "https://picsum.photos/seed/boss/800/800";
   }
 }
 
