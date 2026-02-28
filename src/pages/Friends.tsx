@@ -2,12 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlayerStore } from "../store/playerStore";
 import { motion } from "motion/react";
-import { ArrowLeft, Users, UserPlus, Zap, MessageSquare, Link, Copy } from "lucide-react";
+import { ArrowLeft, Users, UserPlus, Zap, MessageSquare, Link, Copy, Plus, X } from "lucide-react";
 
 export default function Friends() {
   const navigate = useNavigate();
-  const { character, friends, addFriend, toggleFriendAi, addEnergy, addFear } = usePlayerStore();
+  const { character, friends, groupChats, addFriend, toggleFriendAi, addEnergy, addFear, createGroupChat } = usePlayerStore();
   const [newFriendName, setNewFriendName] = useState("");
+  const [showGroupModal, setShowGroupModal] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
 
   if (!character) {
     navigate("/");
@@ -40,6 +43,21 @@ export default function Friends() {
     } else {
       alert("Недостаточно энергии для отправки.");
     }
+  };
+
+  const handleCreateGroup = () => {
+    if (newGroupName.trim() && selectedFriends.length > 0) {
+      createGroupChat(newGroupName.trim(), selectedFriends);
+      setNewGroupName("");
+      setSelectedFriends([]);
+      setShowGroupModal(false);
+    }
+  };
+
+  const toggleFriendSelection = (name: string) => {
+    setSelectedFriends(prev => 
+      prev.includes(name) ? prev.filter(f => f !== name) : [...prev, name]
+    );
   };
 
   return (
@@ -107,6 +125,39 @@ export default function Friends() {
         </section>
 
         <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-white">Групповые чаты ({groupChats.length})</h2>
+            <button 
+              onClick={() => setShowGroupModal(true)}
+              className="p-2 bg-red-900/30 text-red-500 hover:bg-red-900/50 rounded-xl transition-colors flex items-center gap-1 text-sm font-bold"
+            >
+              <Plus size={16} /> Создать
+            </button>
+          </div>
+          {groupChats.length === 0 ? (
+            <p className="text-center text-neutral-500 py-4">Нет групповых чатов.</p>
+          ) : (
+            <div className="space-y-3">
+              {groupChats.map((chat) => (
+                <div key={chat.id} className="bg-neutral-900/80 backdrop-blur-md p-4 rounded-xl border border-neutral-800 flex items-center justify-between">
+                  <div>
+                    <span className="font-bold text-white block">{chat.name}</span>
+                    <span className="text-xs text-neutral-500">{chat.members.length} участников</span>
+                  </div>
+                  <button 
+                    onClick={() => navigate("/chat", { state: { groupId: chat.id } })}
+                    className="p-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-blue-400 transition-colors"
+                    title="Чат"
+                  >
+                    <MessageSquare size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section>
           <h2 className="text-lg font-bold mb-4 text-white">Список друзей ({friends.length})</h2>
           {friends.length === 0 ? (
             <p className="text-center text-neutral-500 py-8">У вас пока нет друзей. Пригласите кого-нибудь!</p>
@@ -148,6 +199,55 @@ export default function Friends() {
           )}
         </section>
       </div>
+
+      {/* Create Group Modal */}
+      {showGroupModal && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 max-w-sm w-full"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-xl font-bold text-white uppercase tracking-wider">Новая группа</h2>
+              <button onClick={() => setShowGroupModal(false)} className="text-neutral-500 hover:text-white">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <input
+              type="text"
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+              placeholder="Название группы..."
+              className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-red-900 transition-colors mb-4 text-white"
+            />
+
+            <h3 className="text-sm font-bold text-neutral-400 mb-2">Выберите участников:</h3>
+            <div className="max-h-48 overflow-y-auto space-y-2 mb-4 pr-2">
+              {friends.map(friend => (
+                <label key={friend.name} className="flex items-center gap-3 p-2 bg-neutral-800/50 rounded-xl cursor-pointer hover:bg-neutral-800">
+                  <input 
+                    type="checkbox" 
+                    checked={selectedFriends.includes(friend.name)}
+                    onChange={() => toggleFriendSelection(friend.name)}
+                    className="accent-red-600 w-4 h-4"
+                  />
+                  <span className="text-white">{friend.name}</span>
+                </label>
+              ))}
+            </div>
+
+            <button
+              onClick={handleCreateGroup}
+              disabled={!newGroupName.trim() || selectedFriends.length === 0}
+              className="w-full py-3 bg-red-700 hover:bg-red-600 text-white rounded-xl font-bold transition-colors disabled:opacity-50"
+            >
+              Создать
+            </button>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 }

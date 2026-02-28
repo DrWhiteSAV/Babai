@@ -2,10 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlayerStore, DEFAULT_IMAGES } from "../store/playerStore";
 import { motion } from "motion/react";
-import { User, ArrowLeft, Copy, Share2, Trophy, Camera, BookOpen, Loader2, Image as ImageIcon, Volume2, VolumeX } from "lucide-react";
+import { User, ArrowLeft, Copy, Share2, Trophy, Camera, BookOpen, Loader2, Image as ImageIcon, Volume2, VolumeX, X } from "lucide-react";
 import * as htmlToImage from 'html-to-image';
 import { generateLore } from "../services/geminiService";
 import CurrencyModal, { CurrencyType } from "../components/CurrencyModal";
+import { SHOP_ITEMS, BOSS_ITEMS } from "../data/items";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export default function Profile() {
   const profileRef = useRef<HTMLDivElement>(null);
   const [isGeneratingLore, setIsGeneratingLore] = useState(false);
   const [infoModal, setInfoModal] = useState<CurrencyType>(null);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
 
   useEffect(() => {
     if (character && !character.lore && !isGeneratingLore) {
@@ -128,7 +130,7 @@ export default function Profile() {
           >
             {character.name}
           </h2>
-          <p className="text-red-500 font-mono text-sm mt-1 uppercase tracking-widest">
+          <p className="text-red-500 text-sm mt-1 uppercase tracking-widest">
             {character.gender} • {character.style}
           </p>
           <div className="flex gap-2 mt-4 flex-wrap justify-center">
@@ -233,24 +235,32 @@ export default function Profile() {
         {/* Inventory */}
         <section>
           <h3 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2 flex items-center gap-2">
-            <Trophy size={18} /> Инвентарь ({inventory.length})
+            <Trophy size={18} /> Инвентарь ({inventory.length}/{SHOP_ITEMS.length + BOSS_ITEMS.length})
           </h3>
-          {inventory.length === 0 ? (
-            <p className="text-neutral-500 text-sm italic text-center py-4">
-              Пусто. Загляните в магазин.
-            </p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {inventory.map((item, i) => (
-                <span
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {[...SHOP_ITEMS, ...BOSS_ITEMS].map((item, i) => {
+              const isOwned = inventory.includes(item.id);
+              return (
+                <motion.div
+                  layout
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   key={i}
-                  className="px-3 py-1 bg-red-900/20 border border-red-900/30 rounded-lg text-sm text-red-200"
+                  onClick={() => setSelectedItem(item)}
+                  className={`border rounded-xl p-3 flex flex-col items-center text-center gap-2 transition-colors cursor-pointer ${isOwned ? 'bg-neutral-900 border-neutral-600 hover:border-red-500' : 'bg-neutral-950 border-neutral-800 opacity-50 hover:opacity-80'}`}
                 >
-                  {item}
-                </span>
-              ))}
-            </div>
-          )}
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${isOwned ? 'bg-neutral-800' : 'bg-neutral-900 grayscale'}`}>
+                    {item.icon}
+                  </div>
+                  <div>
+                    <h4 className={`font-bold text-xs line-clamp-1 ${isOwned ? 'text-white' : 'text-neutral-500'}`}>{item.name}</h4>
+                    <p className="text-[10px] text-neutral-500 uppercase tracking-wider">{item.type}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </section>
 
         {/* Referral */}
@@ -263,7 +273,7 @@ export default function Profile() {
             присоединится по твоей ссылке.
           </p>
           <div className="flex items-center gap-2">
-            <div className="flex-1 bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-3 text-sm font-mono text-neutral-500 truncate">
+            <div className="flex-1 bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-3 text-sm text-neutral-500 truncate">
               bab-ai.ru/invite/
               {character.name.replace(/\s+/g, "").toLowerCase()}
             </div>
@@ -278,6 +288,39 @@ export default function Profile() {
       </div>
 
       <CurrencyModal type={infoModal} onClose={() => setInfoModal(null)} />
+
+      {/* Item Modal */}
+      {selectedItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 max-w-sm w-full relative"
+          >
+            <button
+              onClick={() => setSelectedItem(null)}
+              className="absolute top-4 right-4 p-2 text-neutral-400 hover:text-white bg-neutral-800 rounded-full transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="flex flex-col items-center text-center mt-4">
+              <div className="w-24 h-24 rounded-3xl bg-neutral-800 flex items-center justify-center text-5xl mb-4 shadow-inner">
+                {selectedItem.icon}
+              </div>
+              <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-1">
+                {selectedItem.name}
+              </h3>
+              <p className="text-xs text-neutral-500 uppercase tracking-widest mb-4">
+                {selectedItem.type}
+              </p>
+              <p className="text-neutral-300 text-sm leading-relaxed">
+                {selectedItem.description}
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 }

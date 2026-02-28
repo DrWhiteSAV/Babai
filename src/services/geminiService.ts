@@ -80,11 +80,16 @@ export const generateBossImage = async (style: string) => {
           },
         ],
       },
+      config: {
+        imageConfig: {
+          aspectRatio: "1:1",
+        }
+      }
     });
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
         const base64 = `data:image/png;base64,${part.inlineData.data}`;
-        return await compressImage(base64, 400, 400);
+        return await compressImage(base64, 512, 512);
       }
     }
   } catch (e: any) {
@@ -97,25 +102,31 @@ export const generateBossImage = async (style: string) => {
   return "https://picsum.photos/seed/boss/400/400";
 };
 
-export const editAvatarWithItem = async (currentAvatar: string, item: string) => {
+export const editAvatarWithItem = async (currentAvatar: string, character: any, allOwnedItems: string[], newItemName: string) => {
   try {
-    // We would use gemini-2.5-flash-image to edit, but we need base64 of the image.
-    // Assuming currentAvatar is a URL, we might need to fetch it first.
-    // For simplicity in this demo, we'll just return a new generated image or the same if it fails.
+    const itemsDescription = allOwnedItems.length > 0 ? `На нем надето: ${allOwnedItems.join(", ")}.` : "";
+    const wishesDescription = character.wishes && character.wishes.length > 0 ? `Особые приметы: ${character.wishes.join(", ")}.` : "";
+    const prompt = `Кибер-славянский бабай по имени ${character.name}. Пол: ${character.gender}. Стиль: ${character.style}. Уровень телекинеза: ${character.telekinesisLevel}. Выглядит как страшный старик или старуха в пижаме с длинным языком более 1 метра, которым он хватает предметы. ${wishesDescription} ${itemsDescription} Особое внимание удели новому предмету: ${newItemName}. Мрачная атмосфера, высокое качество, портретное фото.`;
+
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: {
         parts: [
           {
-            text: `Кибер-славянский бабай, на котором надето: ${item}. Мрачная атмосфера, высокое качество.`,
+            text: prompt,
           },
         ],
       },
+      config: {
+        imageConfig: {
+          aspectRatio: "1:1",
+        }
+      }
     });
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
         const base64 = `data:image/png;base64,${part.inlineData.data}`;
-        return await compressImage(base64, 256, 256);
+        return await compressImage(base64, 512, 512); // Increased from 256 to 512
       }
     }
   } catch (e: any) {
@@ -126,4 +137,38 @@ export const editAvatarWithItem = async (currentAvatar: string, item: string) =>
     }
   }
   return currentAvatar;
+};
+
+export const generateGlobalBackground = async (
+  interiorStyle: string,
+  babaStyle: string,
+  interfaceTheme: string,
+) => {
+  try {
+    const prompt = `Background image for a text RPG. A mysterious interior: ${interiorStyle}. Baba style: ${babaStyle}. Interface theme: ${interfaceTheme}. Atmospheric, empty hallways or rooms, cyber-slavic aesthetic. No characters. High quality, detailed.`;
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash-image",
+      contents: { parts: [{ text: prompt }] },
+      config: {
+        imageConfig: {
+          aspectRatio: "16:9",
+        },
+      },
+    });
+
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        const base64 = `data:image/png;base64,${part.inlineData.data}`;
+        return await compressImage(base64, 1024, 576);
+      }
+    }
+    return "https://picsum.photos/seed/globalbg/1920/1080?blur=2";
+  } catch (e: any) {
+    if (e?.status === 429 || e?.message?.includes("429") || e?.message?.includes("quota")) {
+      console.warn("Global background Rate limit exceeded.");
+    } else {
+      console.error("Global background generation failed", e);
+    }
+    return "https://picsum.photos/seed/globalbg/1920/1080?blur=2";
+  }
 };

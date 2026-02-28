@@ -82,7 +82,7 @@ export async function generateAvatar(
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
         const base64 = `data:image/png;base64,${part.inlineData.data}`;
-        return await compressImage(base64, 256, 256);
+        return await compressImage(base64, 512, 512);
       }
     }
     return "https://i.ibb.co/BVgY7XrT/babai.png";
@@ -166,7 +166,7 @@ export async function generateBossImage(
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
         const base64 = `data:image/png;base64,${part.inlineData.data}`;
-        return await compressImage(base64, 400, 400);
+        return await compressImage(base64, 512, 512);
       }
     }
     return "https://picsum.photos/seed/boss/800/800";
@@ -179,14 +179,32 @@ export async function generateBossImage(
 export async function generateDanilChat(
   message: string,
   style: string,
+  imageUrl?: string
 ): Promise<string> {
   try {
-    const response = await withRetry(() => ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `Ты - ДанИИл, дух-начальник (ИИ), который контролирует Бабаев. 
+    const parts: any[] = [];
+    if (imageUrl) {
+      const base64Data = imageUrl.split(',')[1];
+      const mimeType = imageUrl.split(';')[0].split(':')[1];
+      parts.push({
+        inlineData: {
+          data: base64Data,
+          mimeType: mimeType,
+        }
+      });
+    }
+    
+    parts.push({
+      text: `Ты - ДанИИл, дух-начальник (ИИ), который контролирует Бабаев. 
       Стиль общения: строгий, саркастичный, требует отчетов о выселении жильцов. Учитывай стиль мира: ${style}.
       Игрок пишет тебе: "${message}".
-      Ответь коротко (1-2 предложения), оцени работу и дай добро на следующий этап, если игрок убедителен.`,
+      ${imageUrl ? "Игрок также прислал изображение. Прокомментируй его, если оно относится к делу." : ""}
+      Ответь коротко (1-2 предложения), оцени работу и дай добро на следующий этап, если игрок убедителен.`
+    });
+
+    const response = await withRetry(() => ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: { parts },
     }));
     return response.text?.trim() || "Продолжай работать.";
   } catch (e) {
@@ -220,7 +238,7 @@ export async function generateBackgroundImage(
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
         const base64 = `data:image/png;base64,${part.inlineData.data}`;
-        return await compressImage(base64, 800, 450);
+        return await compressImage(base64, 1024, 576);
       }
     }
     return "https://picsum.photos/seed/spooky/1920/1080?blur=2";

@@ -8,6 +8,8 @@ import {
 import { usePlayerStore } from "./store/playerStore";
 import { useEffect, useRef } from "react";
 import { useAudio, menuMusic, bgMusics } from "./hooks/useAudio";
+import BottomNav from "./components/BottomNav";
+import { generateGlobalBackground } from "./services/geminiService";
 
 // Pages
 import Home from "./pages/Home";
@@ -20,9 +22,10 @@ import Settings from "./pages/Settings";
 import Friends from "./pages/Friends";
 import Chat from "./pages/Chat";
 import Gallery from "./pages/Gallery";
+import Leaderboard from "./pages/Leaderboard";
 
 function AppContent() {
-  const { updateEnergy, settings } = usePlayerStore();
+  const { updateEnergy, settings, globalBackgroundUrl, setGlobalBackgroundUrl, character } = usePlayerStore();
   const { playClick } = useAudio(settings.musicVolume);
   const location = useLocation();
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
@@ -81,17 +84,64 @@ function AppContent() {
     return () => document.removeEventListener('click', handleClick);
   }, [playClick]);
 
-  const fontSizeClass = 
-    settings.fontSize === "small" ? "text-sm" :
-    settings.fontSize === "large" ? "text-lg" : "text-base";
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${settings.fontSize}px`;
+  }, [settings.fontSize]);
+
+  const prevStyleRef = useRef(character?.style);
+  const prevThemeRef = useRef(settings.theme);
+
+  useEffect(() => {
+    const generateBg = async () => {
+      if (!character) return;
+      const interiors = ["квартира", "подъезд", "заброшенный дом", "подвал"];
+      const randomInterior = interiors[Math.floor(Math.random() * interiors.length)];
+      const url = await generateGlobalBackground(randomInterior, character.style, settings.theme);
+      setGlobalBackgroundUrl(url);
+    };
+
+    if (!globalBackgroundUrl || prevStyleRef.current !== character?.style || prevThemeRef.current !== settings.theme) {
+      generateBg();
+      prevStyleRef.current = character?.style;
+      prevThemeRef.current = settings.theme;
+    }
+  }, [character?.style, settings.theme, globalBackgroundUrl, setGlobalBackgroundUrl]);
+
+  const fontFamilyMap: Record<string, string> = {
+    "Inter": "font-inter",
+    "Roboto": "font-roboto",
+    "Montserrat": "font-montserrat",
+    "Playfair Display": "font-playfair",
+    "JetBrains Mono": "font-jetbrains",
+    "Press Start 2P": "font-press-start",
+    "Russo One": "font-russo-one",
+    "Rubik Beastly": "font-rubik-beastly",
+    "Rubik Burned": "font-rubik-burned",
+    "Rubik Glitch": "font-rubik-glitch",
+    "Neucha": "font-neucha",
+    "Ruslan Display": "font-ruslan-display",
+  };
+
+  const fontClass = fontFamilyMap[settings.fontFamily] || "font-inter";
+  const themeClass = settings.theme === "cyberpunk" ? "theme-cyberpunk" : "";
 
   const buttonSizeClass = 
     settings.buttonSize === "small" ? "btn-small" :
     settings.buttonSize === "large" ? "btn-large" : "btn-medium";
 
   return (
-    <div className={`min-h-screen bg-neutral-950 text-neutral-100 font-sans selection:bg-red-900 selection:text-white ${fontSizeClass} ${buttonSizeClass}`}>
-      <div className="max-w-md mx-auto min-h-screen bg-neutral-900 shadow-2xl relative overflow-hidden flex flex-col">
+    <div 
+      className={`min-h-screen bg-neutral-950 text-neutral-100 ${fontClass} ${themeClass} selection:bg-red-900 selection:text-white ${buttonSizeClass}`}
+    >
+      <div 
+        className="w-full max-w-7xl mx-auto min-h-screen bg-neutral-900 shadow-2xl relative overflow-hidden flex flex-col md:flex-row pb-16 md:pb-0"
+        style={globalBackgroundUrl ? {
+          backgroundImage: `linear-gradient(to bottom, rgba(23, 23, 23, 0.8), rgba(23, 23, 23, 0.95)), url(${globalBackgroundUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        } : {}}
+      >
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/create" element={<CharacterCreate />} />
@@ -103,8 +153,10 @@ function AppContent() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/friends" element={<Friends />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <BottomNav />
       </div>
     </div>
   );

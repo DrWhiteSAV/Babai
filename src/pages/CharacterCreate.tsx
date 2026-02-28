@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePlayerStore, Gender, Style } from "../store/playerStore";
+import { usePlayerStore, Gender, Style, DEFAULT_IMAGES } from "../store/playerStore";
 import { generateCharacterName, generateAvatar } from "../services/ai";
 import { motion } from "motion/react";
 import { Loader2, ArrowRight, UserPlus, Sparkles } from "lucide-react";
@@ -35,6 +35,7 @@ export default function CharacterCreate() {
   const [gender, setGender] = useState<Gender | null>(null);
   const [style, setStyle] = useState<Style | null>(null);
   const [wishes, setWishes] = useState<string[]>([]);
+  const [selectedDefaultImage, setSelectedDefaultImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [step, setStep] = useState(1);
 
@@ -51,7 +52,11 @@ export default function CharacterCreate() {
     setIsGenerating(true);
     try {
       const name = await generateCharacterName(gender, style);
-      const avatarUrl = await generateAvatar(gender, style, wishes);
+      let avatarUrl = selectedDefaultImage;
+      
+      if (!avatarUrl) {
+        avatarUrl = await generateAvatar(gender, style, wishes);
+      }
 
       setCharacter({
         name,
@@ -94,7 +99,7 @@ export default function CharacterCreate() {
             alt="Loading"
             className="w-64 mb-8 drop-shadow-[0_0_20px_rgba(220,38,38,0.6)]"
           />
-          <p className="font-mono text-lg uppercase tracking-widest text-red-500 animate-pulse font-bold">
+          <p className="text-lg uppercase tracking-widest text-red-500 animate-pulse font-bold">
             Призыв духа...
           </p>
         </motion.div>
@@ -107,7 +112,7 @@ export default function CharacterCreate() {
         >
           Создание Духа
         </h2>
-        <p className="text-neutral-500 text-sm font-mono mt-1">
+        <p className="text-neutral-500 text-sm mt-1">
           Шаг {step} из 3
         </p>
       </div>
@@ -209,6 +214,31 @@ export default function CharacterCreate() {
               })}
             </div>
 
+            <div className="pt-6">
+              <h3 className="text-xl font-bold text-white mb-4">Начальный Аватар</h3>
+              <p className="text-xs text-neutral-400 mb-4">
+                Выберите готовый аватар или оставьте выбор пустым, чтобы сгенерировать уникальный с помощью ИИ.
+              </p>
+              <div className="flex gap-4 overflow-x-auto pb-4 snap-x">
+                <div 
+                  onClick={() => setSelectedDefaultImage(null)}
+                  className={`min-w-[100px] h-[100px] rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer snap-center transition-all ${selectedDefaultImage === null ? "border-red-500 bg-red-900/20" : "border-neutral-700 bg-neutral-900 hover:border-neutral-500"}`}
+                >
+                  <Sparkles size={24} className={selectedDefaultImage === null ? "text-red-400" : "text-neutral-500"} />
+                  <span className={`text-xs mt-2 font-bold ${selectedDefaultImage === null ? "text-red-400" : "text-neutral-500"}`}>ИИ Генерация</span>
+                </div>
+                {DEFAULT_IMAGES.map((img, idx) => (
+                  <div 
+                    key={idx}
+                    onClick={() => setSelectedDefaultImage(img)}
+                    className={`min-w-[100px] h-[100px] rounded-2xl border-2 overflow-hidden cursor-pointer snap-center transition-all ${selectedDefaultImage === img ? "border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.5)]" : "border-neutral-700 hover:border-neutral-500"}`}
+                  >
+                    <img src={img} alt={`Default ${idx}`} className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="pt-8">
               <button
                 disabled={isGenerating}
@@ -218,12 +248,12 @@ export default function CharacterCreate() {
                 {isGenerating ? (
                   <>
                     <Loader2 className="animate-spin" size={20} />
-                    ПРИЗЫВ ДУХА...
+                    {selectedDefaultImage ? "СОЗДАНИЕ ПЕРСОНАЖА..." : "ПРИЗЫВ ДУХА..."}
                   </>
                 ) : (
                   <>
                     <Sparkles size={20} />
-                    СОЗДАТЬ
+                    {selectedDefaultImage ? "ВЫБРАТЬ И НАЧАТЬ" : "СГЕНЕРИРОВАТЬ И НАЧАТЬ"}
                   </>
                 )}
               </button>

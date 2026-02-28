@@ -6,9 +6,10 @@ export type CurrencyType = 'fear' | 'watermelons' | 'energy' | null;
 interface CurrencyModalProps {
   type: CurrencyType;
   onClose: () => void;
+  clickY?: number;
 }
 
-export default function CurrencyModal({ type, onClose }: CurrencyModalProps) {
+export default function CurrencyModal({ type, onClose, clickY }: CurrencyModalProps) {
   if (!type) return null;
 
   const content = {
@@ -33,13 +34,14 @@ export default function CurrencyModal({ type, onClose }: CurrencyModalProps) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="fixed inset-0 z-50 flex justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose} style={{ alignItems: clickY ? 'flex-start' : 'center' }}>
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          initial={{ opacity: 0, scale: 0.9, y: clickY ? clickY - 50 : 20 }}
+          animate={{ opacity: 1, scale: 1, y: clickY ? Math.max(20, Math.min(clickY - 150, window.innerHeight - 300)) : 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: clickY ? clickY - 50 : 20 }}
           onClick={(e) => e.stopPropagation()}
           className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 max-w-sm w-full relative shadow-2xl"
+          style={clickY ? { marginTop: 0 } : {}}
         >
           <button onClick={onClose} className="absolute top-4 right-4 text-neutral-400 hover:text-white p-2 bg-neutral-800 rounded-full transition-colors">
             <X size={20} />

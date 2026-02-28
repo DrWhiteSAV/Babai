@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { usePlayerStore, ButtonSize, FontSize } from "../store/playerStore";
+import { usePlayerStore, ButtonSize, FontFamily, Theme } from "../store/playerStore";
 import { motion } from "motion/react";
 import {
   Settings as SettingsIcon,
@@ -24,8 +24,16 @@ export default function Settings() {
     updateSettings({ buttonSize: size });
   };
 
-  const handleFontSizeChange = (size: FontSize) => {
-    updateSettings({ fontSize: size });
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateSettings({ fontSize: parseInt(e.target.value, 10) });
+  };
+
+  const handleFontFamilyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    updateSettings({ fontFamily: e.target.value as FontFamily });
+  };
+
+  const handleThemeChange = (theme: Theme) => {
+    updateSettings({ theme });
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,25 +89,69 @@ export default function Settings() {
           </div>
         </section>
 
+        {/* Theme Selection */}
+        <section>
+          <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2 flex items-center gap-2">
+            <Square size={18} /> Тема оформления
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {(["normal", "cyberpunk"] as Theme[]).map((theme) => (
+              <button
+                key={theme}
+                onClick={() => handleThemeChange(theme)}
+                className={`p-3 rounded-xl border font-bold transition-all uppercase tracking-wider ${settings.theme === theme ? "border-red-600 bg-red-900/30 text-white" : "border-neutral-800 bg-neutral-900 text-neutral-400 hover:bg-neutral-800"}`}
+              >
+                {theme === "normal" ? "Обычная" : "Киберпанк"}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Font Family */}
+        <section>
+          <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2 flex items-center gap-2">
+            <Type size={18} /> Стиль шрифта
+          </h2>
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4">
+            <select
+              value={settings.fontFamily}
+              onChange={handleFontFamilyChange}
+              className="w-full bg-neutral-800 text-white border border-neutral-700 rounded-xl p-3 outline-none focus:border-red-500 transition-colors"
+            >
+              <option value="Inter" className="font-sans">Обычный (Inter)</option>
+              <option value="Roboto" style={{ fontFamily: "'Roboto', sans-serif" }}>Робото (Roboto)</option>
+              <option value="Montserrat" style={{ fontFamily: "'Montserrat', sans-serif" }}>Монтсеррат (Montserrat)</option>
+              <option value="Playfair Display" style={{ fontFamily: "'Playfair Display', serif" }}>Классический (Playfair)</option>
+              <option value="JetBrains Mono" style={{ fontFamily: "'JetBrains Mono', monospace" }}>Технический (JetBrains)</option>
+              <option value="Press Start 2P" style={{ fontFamily: "'Press Start 2P', cursive" }}>Ретро (8-bit)</option>
+              <option value="Russo One" style={{ fontFamily: "'Russo One', sans-serif" }}>Мощный (Russo One)</option>
+              <option value="Rubik Beastly" style={{ fontFamily: "'Rubik Beastly', cursive" }}>Монстр (Rubik Beastly)</option>
+              <option value="Rubik Burned" style={{ fontFamily: "'Rubik Burned', cursive" }}>Сгоревший (Rubik Burned)</option>
+              <option value="Rubik Glitch" style={{ fontFamily: "'Rubik Glitch', cursive" }}>Глитч (Rubik Glitch)</option>
+              <option value="Neucha" style={{ fontFamily: "'Neucha', cursive" }}>Рукописный (Neucha)</option>
+              <option value="Ruslan Display" style={{ fontFamily: "'Ruslan Display', cursive" }}>Славянский (Ruslan)</option>
+            </select>
+          </div>
+        </section>
+
         {/* Font Size */}
         <section>
           <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2 flex items-center gap-2">
-            <Type size={18} /> Размер шрифта
+            <Type size={18} /> Размер шрифта: {settings.fontSize}px
           </h2>
-          <div className="grid grid-cols-3 gap-3">
-            {(["small", "medium", "large"] as FontSize[]).map((size) => (
-              <button
-                key={size}
-                onClick={() => handleFontSizeChange(size)}
-                className={`p-3 rounded-xl border font-medium transition-all ${settings.fontSize === size ? "border-red-600 bg-red-900/30 text-white" : "border-neutral-800 bg-neutral-900 text-neutral-400 hover:bg-neutral-800"}`}
-              >
-                {size === "small"
-                  ? "Мелкий"
-                  : size === "medium"
-                    ? "Средний"
-                    : "Крупный"}
-              </button>
-            ))}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+            <input
+              type="range"
+              min="5"
+              max="24"
+              value={settings.fontSize}
+              onChange={handleFontSizeChange}
+              className="w-full accent-red-600 h-2 bg-neutral-800 rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-xs text-neutral-500 mt-4 font-mono">
+              <span>5px</span>
+              <span>24px</span>
+            </div>
           </div>
         </section>
 
@@ -130,7 +182,7 @@ export default function Settings() {
               onChange={handleVolumeChange}
               className="w-full h-2 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-red-600"
             />
-            <div className="flex justify-between text-xs text-neutral-500 font-mono mt-4">
+            <div className="flex justify-between text-xs text-neutral-500 mt-4">
               <span>0%</span>
               <span className="text-white font-bold">
                 {settings.musicVolume}%

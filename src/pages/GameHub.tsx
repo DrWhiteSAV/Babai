@@ -10,6 +10,7 @@ import {
   Zap,
   Skull,
   Users,
+  Trophy,
 } from "lucide-react";
 import CurrencyModal, { CurrencyType } from "../components/CurrencyModal";
 
@@ -64,21 +65,21 @@ export default function GameHub() {
             className="flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => setInfoModal('energy')}
           >
-            <div className="flex items-center gap-1 text-yellow-500 font-mono font-bold">
+            <div className="flex items-center gap-1 text-yellow-500 font-bold">
               <Zap size={16} /> {energy}
             </div>
-            <div className="text-[10px] text-yellow-500/70 font-mono font-bold -mt-1">
+            <div className="text-[10px] text-yellow-500/70 font-bold -mt-1">
               {formatTime(timeLeft)}
             </div>
           </div>
           <div 
-            className="flex items-center gap-1 text-red-500 font-mono font-bold cursor-pointer hover:opacity-80 transition-opacity"
+            className="flex items-center gap-1 text-red-500 font-bold cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => setInfoModal('fear')}
           >
             <Skull size={16} /> {fear}
           </div>
           <div 
-            className="flex items-center gap-1 text-green-500 font-mono font-bold cursor-pointer hover:opacity-80 transition-opacity"
+            className="flex items-center gap-1 text-green-500 font-bold cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => setInfoModal('watermelons')}
           >
             🍉 {watermelons}
@@ -122,11 +123,10 @@ export default function GameHub() {
 
           <h2
             className="text-3xl font-black text-white uppercase tracking-wider"
-            style={{ fontFamily: "'Playfair Display', serif" }}
           >
             {character.name}
           </h2>
-          <p className="text-red-500 font-mono text-xs mt-2 uppercase tracking-widest">
+          <p className="text-red-500 text-xs mt-2 uppercase tracking-widest">
             {character.style} • Ур. Телекинеза: {character.telekinesisLevel}
           </p>
         </motion.div>
@@ -142,13 +142,13 @@ export default function GameHub() {
           ИГРАТЬ
         </button>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <button
             onClick={() => navigate("/shop")}
             className="py-4 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-2xl font-medium transition-all active:scale-95 flex flex-col items-center justify-center gap-2 border border-neutral-700"
           >
             <ShoppingCart size={20} className="text-neutral-400" />
-            <span className="text-xs uppercase tracking-wider font-bold">
+            <span className="text-[10px] uppercase tracking-wider font-bold">
               Магазин
             </span>
           </button>
@@ -157,8 +157,17 @@ export default function GameHub() {
             className="py-4 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-2xl font-medium transition-all active:scale-95 flex flex-col items-center justify-center gap-2 border border-neutral-700"
           >
             <Users size={20} className="text-neutral-400" />
-            <span className="text-xs uppercase tracking-wider font-bold">
+            <span className="text-[10px] uppercase tracking-wider font-bold">
               Друзья
+            </span>
+          </button>
+          <button
+            onClick={() => navigate("/leaderboard")}
+            className="py-4 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-2xl font-medium transition-all active:scale-95 flex flex-col items-center justify-center gap-2 border border-neutral-700"
+          >
+            <Trophy size={20} className="text-yellow-500" />
+            <span className="text-[10px] uppercase tracking-wider font-bold">
+              Рейтинг
             </span>
           </button>
         </div>

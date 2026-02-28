@@ -69,7 +69,7 @@ export default function Home() {
         )}
       </div>
 
-      <div className="absolute bottom-6 text-center w-full text-neutral-600 text-xs font-mono">
+      <div className="absolute bottom-6 text-center w-full text-neutral-600 text-xs">
         v1.0.0 &copy; 2026 Bab-AI.ru
       </div>
     </motion.div>

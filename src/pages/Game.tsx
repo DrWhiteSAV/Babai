@@ -355,12 +355,12 @@ export default function Game() {
           >
             <X size={20} />
           </button>
-          <div className="flex gap-4 font-mono font-bold">
+          <div className="flex gap-4 font-bold">
             <div className="flex flex-col items-center justify-center">
               <span className="text-yellow-500 flex items-center gap-1">
                 <Zap size={16} /> {energy}
               </span>
-              <div className="text-[10px] text-yellow-500/70 font-mono font-bold -mt-1">
+              <div className="text-[10px] text-yellow-500/70 font-bold -mt-1">
                 {formatTime(timeLeft)}
               </div>
             </div>
@@ -482,7 +482,7 @@ export default function Game() {
             <div className="text-sm font-bold text-red-500">{difficulty}</div>
           </div>
         </div>
-        <div className="flex gap-3 font-mono font-bold text-sm">
+        <div className="flex gap-3 font-bold text-sm">
           <span className="text-red-500 flex items-center gap-1">
             <Skull size={14} /> {fear}
           </span>
@@ -510,7 +510,7 @@ export default function Game() {
                 alt="Loading"
                 className="w-48 mb-6 drop-shadow-[0_0_15px_rgba(220,38,38,0.5)]"
               />
-              <p className="font-mono text-sm uppercase tracking-widest text-red-500 animate-pulse font-bold">
+              <p className="text-sm uppercase tracking-widest text-red-500 animate-pulse font-bold">
                 Генерация кошмара...
               </p>
             </motion.div>
@@ -523,7 +523,7 @@ export default function Game() {
             >
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-black text-red-600 uppercase tracking-tighter mb-2">БИТВА С БОССОМ (УР. {bossLevel})</h3>
-                <div className="flex gap-4 justify-center font-mono">
+                <div className="flex gap-4 justify-center">
                   <span className="text-yellow-500">ВРЕМЯ: {bossTimer}с</span>
                   <span className="text-red-500">УДАРЫ: {bossTaps}/{100 * Math.pow(2, bossLevel - 1)}</span>
                 </div>
@@ -584,7 +584,7 @@ export default function Game() {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg">ДанИИл</h3>
-                  <p className="text-xs text-green-500 font-mono">В сети</p>
+                  <p className="text-xs text-green-500">В сети</p>
                 </div>
               </div>
 

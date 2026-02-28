@@ -13,7 +13,20 @@ export type Style =
   | "2D мультфильм"
   | "Фентези деревня";
 export type ButtonSize = "small" | "medium" | "large";
-export type FontSize = "small" | "medium" | "large";
+export type FontFamily = 
+  | "Inter" 
+  | "Roboto"
+  | "Montserrat"
+  | "Playfair Display" 
+  | "JetBrains Mono" 
+  | "Press Start 2P" 
+  | "Russo One"
+  | "Rubik Beastly"
+  | "Rubik Burned"
+  | "Rubik Glitch"
+  | "Neucha"
+  | "Ruslan Display";
+export type Theme = "normal" | "cyberpunk";
 
 export interface Character {
   name: string;
@@ -38,10 +51,13 @@ export interface GroupChat {
 
 export interface Quest {
   id: string;
+  type: 'daily' | 'global';
   title: string;
   description: string;
   reward: { type: 'fear' | 'energy' | 'watermelons'; amount: number };
   completed: boolean;
+  progress: number;
+  target: number;
 }
 
 export interface PlayerState {
@@ -59,10 +75,13 @@ export interface PlayerState {
   quests: Quest[];
   settings: {
     buttonSize: ButtonSize;
-    fontSize: FontSize;
+    fontFamily: FontFamily;
+    fontSize: number;
+    theme: Theme;
     musicVolume: number;
     ttsEnabled: boolean;
   };
+  globalBackgroundUrl: string | null;
   setCharacter: (char: Character) => void;
   updateCharacter: (updates: Partial<Character>) => void;
   addFear: (amount: number) => void;
@@ -73,6 +92,7 @@ export interface PlayerState {
   spendWatermelons: (amount: number) => boolean;
   updateEnergy: () => void;
   updateSettings: (settings: Partial<PlayerState["settings"]>) => void;
+  setGlobalBackgroundUrl: (url: string) => void;
   buyItem: (item: string, cost: number, currency?: 'fear' | 'watermelons') => boolean;
   addToGallery: (url: string) => void;
   upgradeTelekinesis: (cost: number) => boolean;
@@ -82,6 +102,7 @@ export interface PlayerState {
   toggleFriendAi: (name: string) => void;
   createGroupChat: (name: string, members: string[]) => void;
   completeQuest: (id: string) => void;
+  updateQuestProgress: (id: string, amount: number) => void;
 }
 
 export const ENERGY_REGEN_RATE = 5 * 60 * 1000; // 5 minutes in ms
@@ -109,15 +130,20 @@ export const usePlayerStore = create<PlayerState>()(
       friends: [{ name: "ДанИИл", isAiEnabled: true }],
       groupChats: [],
       quests: [
-        { id: 'q1', title: 'Первый испуг', description: 'Выгони 5 жильцов', reward: { type: 'fear', amount: 10 }, completed: false },
-        { id: 'q2', title: 'Арбузный магнат', description: 'Победи босса', reward: { type: 'watermelons', amount: 5 }, completed: false }
+        { id: 'q1', type: 'daily', title: 'Первый испуг', description: 'Выгони 5 жильцов', reward: { type: 'fear', amount: 50 }, completed: false, progress: 0, target: 5 },
+        { id: 'q2', type: 'daily', title: 'Сборщик дани', description: 'Собери 3 арбуза', reward: { type: 'watermelons', amount: 3 }, completed: false, progress: 0, target: 3 },
+        { id: 'q3', type: 'global', title: 'Арбузный магнат', description: 'Победи босса', reward: { type: 'watermelons', amount: 15 }, completed: false, progress: 0, target: 1 },
+        { id: 'q4', type: 'global', title: 'Мастер телекинеза', description: 'Прокачай телекинез до 5 уровня', reward: { type: 'energy', amount: 100 }, completed: false, progress: 0, target: 5 }
       ],
       settings: {
         buttonSize: "medium",
-        fontSize: "medium",
+        fontFamily: "Inter",
+        fontSize: 16,
+        theme: "normal",
         musicVolume: 50,
         ttsEnabled: false,
       },
+      globalBackgroundUrl: null,
       setCharacter: (char) => {
         const { addToGallery } = get();
         set({ character: char });
@@ -171,6 +197,7 @@ export const usePlayerStore = create<PlayerState>()(
       },
       updateSettings: (newSettings) =>
         set((state) => ({ settings: { ...state.settings, ...newSettings } })),
+      setGlobalBackgroundUrl: (url) => set({ globalBackgroundUrl: url }),
       buyItem: (item, cost, currency = 'fear') => {
         const { fear, watermelons, inventory } = get();
         if (inventory.includes(item)) return false;
@@ -246,14 +273,27 @@ export const usePlayerStore = create<PlayerState>()(
         set({ groupChats: [...groupChats, { id: Date.now().toString(), name, members }] });
       },
       completeQuest: (id) => {
-        const { quests, addFear, addEnergy, addWatermelons } = get();
+        const { quests, addFear, addEnergy, addWatermelons, addAchievement } = get();
         const quest = quests.find(q => q.id === id);
-        if (quest && !quest.completed) {
+        if (quest && !quest.completed && quest.progress >= quest.target) {
           set({ quests: quests.map(q => q.id === id ? { ...q, completed: true } : q) });
           if (quest.reward.type === 'fear') addFear(quest.reward.amount);
           if (quest.reward.type === 'energy') addEnergy(quest.reward.amount);
           if (quest.reward.type === 'watermelons') addWatermelons(quest.reward.amount);
+          addAchievement(`quest_${id}`);
         }
+      },
+      updateQuestProgress: (id, amount) => {
+        const { quests } = get();
+        set({
+          quests: quests.map(q => {
+            if (q.id === id && !q.completed) {
+              const newProgress = Math.min(q.progress + amount, q.target);
+              return { ...q, progress: newProgress };
+            }
+            return q;
+          })
+        });
       }
     }),
     {

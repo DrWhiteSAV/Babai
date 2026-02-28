@@ -1,10 +1,11 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlayerStore } from "../store/playerStore";
 import { motion, AnimatePresence } from "motion/react";
-import { ShoppingCart, ArrowLeft, Skull, Zap, Loader2, X } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Skull, Zap, Loader2, X, Sparkles } from "lucide-react";
 import { editAvatarWithItem } from "../services/geminiService";
 import CurrencyModal, { CurrencyType } from "../components/CurrencyModal";
+import TopBar from "../components/TopBar";
 import { SHOP_ITEMS, BOSS_ITEMS } from "../data/items";
 
 export default function Shop() {
@@ -12,9 +13,16 @@ export default function Shop() {
   const { fear, watermelons, inventory, buyItem, upgradeTelekinesis, upgradeBossLevel, bossLevel, character, updateCharacter, addToGallery } =
     usePlayerStore();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [infoModal, setInfoModal] = useState<CurrencyType>(null);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [warningModal, setWarningModal] = useState<{ item: any, deficit: number } | null>(null);
+  const [infoModal, setInfoModal] = useState<{type: CurrencyType, y: number} | null>(null);
+  const [selectedItem, setSelectedItem] = useState<{item: any, y: number} | null>(null);
+  const [warningModal, setWarningModal] = useState<{ item: any, deficit: number, y: number } | null>(null);
+  const [successEffect, setSuccessEffect] = useState<string | null>(null);
+
+  const playSuccessSound = () => {
+    const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+    audio.volume = 0.5;
+    audio.play().catch(e => console.log("Audio play failed:", e));
+  };
 
   const handleBuy = async (item: any) => {
     if (inventory.includes(item.id)) {
@@ -23,10 +31,10 @@ export default function Shop() {
     }
     
     if (item.currency === "watermelons" && watermelons < item.cost) {
-      setWarningModal({ item, deficit: item.cost - watermelons });
+      setWarningModal({ item, deficit: item.cost - watermelons, y: window.innerHeight / 2 });
       return;
     } else if (item.currency === "fear" && fear < item.cost) {
-      setWarningModal({ item, deficit: item.cost - fear });
+      setWarningModal({ item, deficit: item.cost - fear, y: window.innerHeight / 2 });
       return;
     }
 
@@ -39,6 +47,10 @@ export default function Shop() {
 
     const success = buyItem(item.id, item.cost, item.currency);
     if (success && character) {
+      playSuccessSound();
+      setSuccessEffect(item.id);
+      setTimeout(() => setSuccessEffect(null), 2000);
+
       // Edit avatar
       const allOwnedItems = [...inventory, item.id]
         .map(id => [...SHOP_ITEMS, ...BOSS_ITEMS].find(i => i.id === id)?.name)
@@ -46,38 +58,43 @@ export default function Shop() {
       
       const newAvatar = await editAvatarWithItem(character.avatarUrl, character, allOwnedItems, item.name);
       updateCharacter({ avatarUrl: newAvatar });
-      alert(`Вы купили: ${item.name}. Внешность обновлена!`);
     }
     
     setIsProcessing(false);
   };
 
-  const handleUpgrade = () => {
+  const handleUpgrade = (e: React.MouseEvent) => {
     if (!character) return;
     const cost = 50 * Math.pow(2, character.telekinesisLevel - 1);
     if (fear < cost) {
       setWarningModal({ 
         item: { name: "Телекинез", currency: "fear" }, 
-        deficit: cost - fear 
+        deficit: cost - fear,
+        y: e.clientY
       });
       return;
     }
     if (upgradeTelekinesis(cost)) {
-      alert("Телекинез улучшен!");
+      playSuccessSound();
+      setSuccessEffect("telekinesis");
+      setTimeout(() => setSuccessEffect(null), 2000);
     }
   };
 
-  const handleUpgradeBoss = () => {
+  const handleUpgradeBoss = (e: React.MouseEvent) => {
     const cost = 500 * Math.pow(5, bossLevel - 1);
     if (watermelons < cost) {
       setWarningModal({ 
         item: { name: "Усиление Босса", currency: "watermelons" }, 
-        deficit: cost - watermelons 
+        deficit: cost - watermelons,
+        y: e.clientY
       });
       return;
     }
     if (upgradeBossLevel(cost)) {
-      alert("Уровень босса повышен!");
+      playSuccessSound();
+      setSuccessEffect("boss_level");
+      setTimeout(() => setSuccessEffect(null), 2000);
     }
   };
 
@@ -94,33 +111,13 @@ export default function Shop() {
         <div className="fog-layer-2"></div>
       </div>
 
-      <header className="flex items-center justify-between p-4 bg-neutral-900 border-b border-neutral-800 sticky top-0 z-20">
-        <button
-          onClick={() => navigate("/hub")}
-          className="p-2 hover:bg-neutral-800 rounded-full transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold uppercase tracking-widest flex items-center gap-2">
-          <ShoppingCart size={20} /> Магазин
-        </h1>
-        <div className="flex gap-4">
-          <div 
-            className="flex items-center gap-1 text-red-500 font-mono font-bold cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => setInfoModal('fear')}
-          >
-            <Skull size={16} /> {fear}
-          </div>
-          <div 
-            className="flex items-center gap-1 text-green-500 font-mono font-bold cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => setInfoModal('watermelons')}
-          >
-            🍉 {watermelons}
-          </div>
-        </div>
-      </header>
+      <TopBar 
+        title={<><ShoppingCart size={20} /> Магазин</>} 
+        backUrl="/hub" 
+        onInfoClick={(type, e) => setInfoModal({type, y: e?.clientY || window.innerHeight / 2})} 
+      />
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-8">
+      <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-24">
         {/* Shop Logo */}
         <div className="flex justify-center mb-6">
           <img 
@@ -135,18 +132,21 @@ export default function Shop() {
           <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2">
             Способности и Улучшения
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div 
-              onClick={() => setSelectedItem({
-                id: "telekinesis",
-                name: "Телекинез",
-                type: "Способность",
-                icon: "🧠",
-                description: `Увеличивает количество получаемого страха за правильные ответы. Текущий бонус: +${character ? character.telekinesisLevel - 1 : 0} страха.`,
-                cost: 50 * Math.pow(2, (character?.telekinesisLevel || 1) - 1),
-                currency: "fear",
-                isUpgrade: true,
-                action: handleUpgrade
+              onClick={(e) => setSelectedItem({
+                item: {
+                  id: "telekinesis",
+                  name: "Телекинез",
+                  type: "Способность",
+                  icon: "🧠",
+                  description: `Увеличивает количество получаемого страха за правильные ответы. Текущий бонус: +${character ? character.telekinesisLevel - 1 : 0} страха.`,
+                  cost: 50 * Math.pow(2, (character?.telekinesisLevel || 1) - 1),
+                  currency: "fear",
+                  isUpgrade: true,
+                  action: handleUpgrade
+                },
+                y: e.clientY
               })}
               className="bg-neutral-900 border border-neutral-800 hover:border-neutral-600 rounded-2xl p-4 flex flex-col items-center text-center gap-3 transition-colors cursor-pointer"
             >
@@ -160,30 +160,44 @@ export default function Shop() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleUpgrade();
+                  handleUpgrade(e);
                 }}
-                className={`w-full py-2 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-1 ${
-                  character && fear >= 50 * Math.pow(2, character.telekinesisLevel - 1)
+                className={`w-full py-2 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-1 relative overflow-hidden ${
+                  successEffect === "telekinesis" 
+                    ? "bg-green-500 text-white border-green-400 scale-105 shadow-[0_0_20px_rgba(34,197,94,0.6)]"
+                    : character && fear >= 50 * Math.pow(2, character.telekinesisLevel - 1)
                     ? "bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50"
                     : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
                 }`}
               >
+                {successEffect === "telekinesis" && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="absolute inset-0 flex items-center justify-center bg-green-500"
+                  >
+                    <Sparkles size={18} className="text-white" />
+                  </motion.div>
+                )}
                 <Skull size={14} />{" "}
                 {character ? 50 * Math.pow(2, character.telekinesisLevel - 1) : 0}
               </button>
             </div>
 
             <div 
-              onClick={() => setSelectedItem({
-                id: "boss_level",
-                name: "Усиление Босса",
-                type: "Улучшение",
-                icon: "👹",
-                description: `Увеличивает здоровье босса и награду за его убийство. Текущая награда: ${25 * Math.pow(2, bossLevel - 1)} арбузов.`,
-                cost: 500 * Math.pow(5, bossLevel - 1),
-                currency: "watermelons",
-                isUpgrade: true,
-                action: handleUpgradeBoss
+              onClick={(e) => setSelectedItem({
+                item: {
+                  id: "boss_level",
+                  name: "Усиление Босса",
+                  type: "Улучшение",
+                  icon: "👹",
+                  description: `Увеличивает здоровье босса и награду за его убийство. Текущая награда: ${25 * Math.pow(2, bossLevel - 1)} арбузов.`,
+                  cost: 500 * Math.pow(5, bossLevel - 1),
+                  currency: "watermelons",
+                  isUpgrade: true,
+                  action: handleUpgradeBoss
+                },
+                y: e.clientY
               })}
               className="bg-neutral-900 border border-neutral-800 hover:border-neutral-600 rounded-2xl p-4 flex flex-col items-center text-center gap-3 transition-colors cursor-pointer"
             >
@@ -197,14 +211,25 @@ export default function Shop() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleUpgradeBoss();
+                  handleUpgradeBoss(e);
                 }}
-                className={`w-full py-2 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-1 ${
-                  watermelons >= 500 * Math.pow(5, bossLevel - 1)
+                className={`w-full py-2 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-1 relative overflow-hidden ${
+                  successEffect === "boss_level"
+                    ? "bg-green-500 text-white border-green-400 scale-105 shadow-[0_0_20px_rgba(34,197,94,0.6)]"
+                    : watermelons >= 500 * Math.pow(5, bossLevel - 1)
                     ? "bg-green-900/30 hover:bg-green-900/50 text-green-400 border border-green-900/50"
                     : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
                 }`}
               >
+                {successEffect === "boss_level" && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="absolute inset-0 flex items-center justify-center bg-green-500"
+                  >
+                    <Sparkles size={18} className="text-white" />
+                  </motion.div>
+                )}
                 🍉 {500 * Math.pow(5, bossLevel - 1)}
               </button>
             </div>
@@ -216,17 +241,25 @@ export default function Shop() {
           <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2">
             Товары за Страх
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
             {SHOP_ITEMS.map((item) => {
               const isOwned = inventory.includes(item.id);
               return (
                 <div
                   key={item.id}
-                  onClick={() => setSelectedItem(item)}
+                  onClick={(e) => setSelectedItem({item, y: e.clientY})}
                   className={`bg-neutral-900 border ${isOwned ? "border-green-900/50 opacity-70" : "border-neutral-800 hover:border-neutral-600"} rounded-2xl p-4 flex flex-col items-center text-center gap-3 transition-colors cursor-pointer`}
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-neutral-800 flex items-center justify-center text-3xl shadow-inner">
+                  <div className="w-16 h-16 rounded-2xl bg-neutral-800 flex items-center justify-center text-3xl shadow-inner relative">
                     {item.icon}
+                    {successEffect === item.id && (
+                      <motion.div
+                        initial={{ scale: 0, opacity: 1 }}
+                        animate={{ scale: 2, opacity: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="absolute inset-0 bg-green-500 rounded-2xl"
+                      />
+                    )}
                   </div>
                   <div className="flex-1">
                     <h3 className="font-bold text-white leading-tight">{item.name}</h3>
@@ -267,17 +300,25 @@ export default function Shop() {
           <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2">
             Экипировка для Боссов
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
             {BOSS_ITEMS.map((item) => {
               const isOwned = inventory.includes(item.id);
               return (
                 <div
                   key={item.id}
-                  onClick={() => setSelectedItem(item)}
+                  onClick={(e) => setSelectedItem({item, y: e.clientY})}
                   className={`bg-neutral-900 border ${isOwned ? "border-green-900/50 opacity-70" : "border-neutral-800 hover:border-neutral-600"} rounded-2xl p-4 flex flex-col items-center text-center gap-3 transition-colors cursor-pointer`}
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-neutral-800 flex items-center justify-center text-3xl shadow-inner">
+                  <div className="w-16 h-16 rounded-2xl bg-neutral-800 flex items-center justify-center text-3xl shadow-inner relative">
                     {item.icon}
+                    {successEffect === item.id && (
+                      <motion.div
+                        initial={{ scale: 0, opacity: 1 }}
+                        animate={{ scale: 2, opacity: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="absolute inset-0 bg-green-500 rounded-2xl"
+                      />
+                    )}
                   </div>
                   <div className="flex-1">
                     <h3 className="font-bold text-white leading-tight">{item.name}</h3>
@@ -314,17 +355,18 @@ export default function Shop() {
         </section>
       </div>
 
-      <CurrencyModal type={infoModal} onClose={() => setInfoModal(null)} />
+      <CurrencyModal type={infoModal?.type || null} clickY={infoModal?.y} onClose={() => setInfoModal(null)} />
 
       <AnimatePresence>
         {selectedItem && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedItem(null)}>
+          <div className="fixed inset-0 z-50 flex justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedItem(null)} style={{ alignItems: selectedItem.y ? 'flex-start' : 'center' }}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.9, y: selectedItem.y ? selectedItem.y - 50 : 20 }}
+              animate={{ opacity: 1, scale: 1, y: selectedItem.y ? Math.max(20, Math.min(selectedItem.y - 150, window.innerHeight - 400)) : 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: selectedItem.y ? selectedItem.y - 50 : 20 }}
               onClick={(e) => e.stopPropagation()}
               className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 max-w-sm w-full relative shadow-2xl"
+              style={selectedItem.y ? { marginTop: 0 } : {}}
             >
               <button onClick={() => setSelectedItem(null)} className="absolute top-4 right-4 text-neutral-400 hover:text-white p-2 bg-neutral-800 rounded-full transition-colors">
                 <X size={20} />
@@ -332,46 +374,46 @@ export default function Shop() {
               
               <div className="flex flex-col items-center text-center gap-4 mt-2">
                 <div className="w-24 h-24 rounded-2xl bg-neutral-800 flex items-center justify-center text-5xl border border-neutral-700/50 shadow-inner">
-                  {selectedItem.icon}
+                  {selectedItem.item.icon}
                 </div>
                 
                 <div>
-                  <h2 className="text-2xl font-black text-white">{selectedItem.name}</h2>
-                  <p className="text-sm font-bold text-neutral-500 uppercase tracking-widest mt-1">{selectedItem.type}</p>
+                  <h2 className="text-2xl font-black text-white">{selectedItem.item.name}</h2>
+                  <p className="text-sm font-bold text-neutral-500 uppercase tracking-widest mt-1">{selectedItem.item.type}</p>
                 </div>
                 
                 <p className="text-neutral-300 leading-relaxed text-sm bg-neutral-800/50 p-4 rounded-xl border border-neutral-700/30 w-full">
-                  {selectedItem.description}
+                  {selectedItem.item.description}
                 </p>
 
                 <button
-                  disabled={(!selectedItem.isUpgrade && inventory.includes(selectedItem.id)) || isProcessing}
-                  onClick={() => {
-                    if (selectedItem.isUpgrade) {
-                      selectedItem.action();
-                      if (selectedItem.currency === "fear" && fear >= selectedItem.cost) setSelectedItem(null);
-                      if (selectedItem.currency === "watermelons" && watermelons >= selectedItem.cost) setSelectedItem(null);
+                  disabled={(!selectedItem.item.isUpgrade && inventory.includes(selectedItem.item.id)) || isProcessing}
+                  onClick={(e) => {
+                    if (selectedItem.item.isUpgrade) {
+                      selectedItem.item.action(e);
+                      if (selectedItem.item.currency === "fear" && fear >= selectedItem.item.cost) setSelectedItem(null);
+                      if (selectedItem.item.currency === "watermelons" && watermelons >= selectedItem.item.cost) setSelectedItem(null);
                     } else {
-                      handleBuy(selectedItem);
-                      if (selectedItem.currency === "fear" && fear >= selectedItem.cost) setSelectedItem(null);
-                      if (selectedItem.currency === "watermelons" && watermelons >= selectedItem.cost) setSelectedItem(null);
+                      handleBuy(selectedItem.item);
+                      if (selectedItem.item.currency === "fear" && fear >= selectedItem.item.cost) setSelectedItem(null);
+                      if (selectedItem.item.currency === "watermelons" && watermelons >= selectedItem.item.cost) setSelectedItem(null);
                     }
                   }}
                   className={`mt-4 w-full py-4 rounded-xl font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2 ${
-                    !selectedItem.isUpgrade && inventory.includes(selectedItem.id)
+                    !selectedItem.item.isUpgrade && inventory.includes(selectedItem.item.id)
                       ? "bg-green-900/20 text-green-500 border border-green-900/30"
-                      : (selectedItem.currency === "fear" && fear >= selectedItem.cost) || (selectedItem.currency === "watermelons" && watermelons >= selectedItem.cost)
+                      : (selectedItem.item.currency === "fear" && fear >= selectedItem.item.cost) || (selectedItem.item.currency === "watermelons" && watermelons >= selectedItem.item.cost)
                       ? "bg-neutral-100 hover:bg-white text-neutral-900"
                       : "bg-neutral-800 text-neutral-400 border border-neutral-700"
                   }`}
                 >
-                  {!selectedItem.isUpgrade && inventory.includes(selectedItem.id) ? (
+                  {!selectedItem.item.isUpgrade && inventory.includes(selectedItem.item.id) ? (
                     "УЖЕ КУПЛЕНО"
                   ) : isProcessing ? (
                     <Loader2 size={20} className="animate-spin" />
                   ) : (
                     <>
-                      {selectedItem.isUpgrade ? "УЛУЧШИТЬ ЗА" : "КУПИТЬ ЗА"} {selectedItem.cost} {selectedItem.currency === 'fear' ? <Skull size={18} /> : '🍉'}
+                      {selectedItem.item.isUpgrade ? "УЛУЧШИТЬ ЗА" : "КУПИТЬ ЗА"} {selectedItem.item.cost} {selectedItem.item.currency === 'fear' ? <Skull size={18} /> : '🍉'}
                     </>
                   )}
                 </button>
@@ -383,13 +425,14 @@ export default function Shop() {
 
       <AnimatePresence>
         {warningModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setWarningModal(null)}>
+          <div className="fixed inset-0 z-50 flex justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setWarningModal(null)} style={{ alignItems: warningModal.y ? 'flex-start' : 'center' }}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.9, y: warningModal.y ? warningModal.y - 50 : 20 }}
+              animate={{ opacity: 1, scale: 1, y: warningModal.y ? Math.max(20, Math.min(warningModal.y - 150, window.innerHeight - 300)) : 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: warningModal.y ? warningModal.y - 50 : 20 }}
               onClick={(e) => e.stopPropagation()}
               className="bg-neutral-900 border border-red-900/50 rounded-3xl p-6 max-w-sm w-full relative shadow-[0_0_40px_rgba(220,38,38,0.2)]"
+              style={warningModal.y ? { marginTop: 0 } : {}}
             >
               <button onClick={() => setWarningModal(null)} className="absolute top-4 right-4 text-neutral-400 hover:text-white p-2 bg-neutral-800 rounded-full transition-colors">
                 <X size={20} />
