@@ -241,10 +241,10 @@ export async function generateBackgroundImage(
         return await compressImage(base64, 1024, 576);
       }
     }
-    return "https://picsum.photos/seed/spooky/1920/1080?blur=2";
+    return "https://picsum.photos/seed/spooky/1920/1080";
   } catch (e: any) {
     console.warn("Image generation error or Rate limit, using fallback.");
-    return `https://picsum.photos/seed/floor${stage}/1920/1080?blur=2`;
+    return `https://picsum.photos/seed/floor${stage}/1920/1080`;
   }
 }
 

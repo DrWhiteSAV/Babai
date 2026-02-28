@@ -99,7 +99,7 @@ export const generateBossImage = async (style: string) => {
       console.error("Boss image generation failed", e);
     }
   }
-  return "https://picsum.photos/seed/boss/400/400";
+  return "https://picsum.photos/seed/boss/1920/1080";
 };
 
 export const editAvatarWithItem = async (currentAvatar: string, character: any, allOwnedItems: string[], newItemName: string) => {
@@ -162,13 +162,13 @@ export const generateGlobalBackground = async (
         return await compressImage(base64, 1024, 576);
       }
     }
-    return "https://picsum.photos/seed/globalbg/1920/1080?blur=2";
+    return "https://picsum.photos/seed/globalbg/1920/1080";
   } catch (e: any) {
     if (e?.status === 429 || e?.message?.includes("429") || e?.message?.includes("quota")) {
       console.warn("Global background Rate limit exceeded.");
     } else {
       console.error("Global background generation failed", e);
     }
-    return "https://picsum.photos/seed/globalbg/1920/1080?blur=2";
+    return "https://picsum.photos/seed/globalbg/1920/1080";
   }
 };
