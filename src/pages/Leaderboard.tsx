@@ -26,7 +26,7 @@ export default function Leaderboard() {
       exit={{ opacity: 0, scale: 1.05 }}
       className="flex-1 flex flex-col bg-neutral-950 text-neutral-200 relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/leaderboard/1080/1920?blur=4')] bg-cover bg-center opacity-10 pointer-events-none mix-blend-overlay" />
+      <div className="absolute inset-0 bg-[url('https://picsum.photos/id/878/1920/1080')] bg-cover bg-center opacity-10 pointer-events-none mix-blend-overlay" />
       
       <header className="flex items-center justify-between p-4 bg-neutral-900 border-b border-neutral-800 sticky top-0 z-20">
         <button

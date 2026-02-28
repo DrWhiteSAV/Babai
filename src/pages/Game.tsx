@@ -534,7 +534,7 @@ export default function Game() {
                 className="relative w-64 h-64 md:w-80 md:h-80 rounded-3xl overflow-hidden border-4 border-red-900 shadow-[0_0_50px_rgba(220,38,38,0.4)] cursor-pointer active:scale-95 transition-transform"
               >
                 <img 
-                  src={bossImage || "https://picsum.photos/seed/boss/800/800"} 
+                  src={bossImage || "https://picsum.photos/id/718/1080/1920"} 
                   alt="Boss" 
                   className="w-full h-full object-cover"
                 />

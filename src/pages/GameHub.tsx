@@ -49,9 +49,9 @@ export default function GameHub() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="flex-1 flex flex-col bg-neutral-950 text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col bg-neutral-650 text-neutral-200 relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/spookyhub/1080/1920?blur=2')] bg-cover bg-center opacity-30 pointer-events-none mix-blend-overlay" />
+      <div className="absolute inset-0 bg-[url('https://picsum.photos/id/945/1080/1920')] bg-cover bg-center opacity-30 pointer-events-none mix-blend-overlay" />
       
       <div className="fog-container">
         <div className="fog-layer"></div>
@@ -127,7 +127,8 @@ export default function GameHub() {
             {character.name}
           </h2>
           <p className="text-red-500 text-xs mt-2 uppercase tracking-widest">
-            {character.style} • Ур. Телекинеза: {character.telekinesisLevel}
+            {character.style} 
+            • Ур. Телекинеза: {character.telekinesisLevel}
           </p>
         </motion.div>
       </div>

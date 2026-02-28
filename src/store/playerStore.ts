@@ -110,9 +110,8 @@ export const ENERGY_REGEN_RATE = 5 * 60 * 1000; // 5 minutes in ms
 export const DEFAULT_IMAGES = [
   "https://images.unsplash.com/photo-1505635552518-3448ff116af3?q=80&w=1080&auto=format&fit=crop",
   "https://i.ibb.co/BVgY7XrT/babai.png",
-  "https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?q=80&w=1080&auto=format&fit=crop",
-  "https://picsum.photos/seed/boss/400/400",
-  "https://picsum.photos/seed/babai/400/400"
+  "https://picsum.photos/id/718/1920/1080",
+  "https://picsum.photos/id/878/1920/1080"
 ];
 
 export const usePlayerStore = create<PlayerState>()(

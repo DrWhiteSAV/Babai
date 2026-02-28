@@ -169,10 +169,10 @@ export async function generateBossImage(
         return await compressImage(base64, 512, 512);
       }
     }
-    return "https://picsum.photos/seed/boss/800/800";
+    return "https://picsum.photos/id/718/1920/1080";
   } catch (e) {
     console.error("Boss image gen error:", e);
-    return "https://picsum.photos/seed/boss/800/800";
+    return "https://picsum.photos/id/718/1920/1080";
   }
 }
 
@@ -241,7 +241,7 @@ export async function generateBackgroundImage(
         return await compressImage(base64, 1024, 576);
       }
     }
-    return "https://picsum.photos/seed/spooky/1920/1080";
+    return "https://picsum.photos/id/878/1920/1080";
   } catch (e: any) {
     console.warn("Image generation error or Rate limit, using fallback.");
     return `https://picsum.photos/seed/floor${stage}/1920/1080`;

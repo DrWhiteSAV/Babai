@@ -22,7 +22,7 @@ export default function Home() {
       exit={{ opacity: 0 }}
       className="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/homebg/1080/1920?blur=3')] bg-cover bg-center opacity-40 pointer-events-none mix-blend-overlay" />
+      <div className="absolute inset-0 bg-[url('https://picsum.photos/id/878/1920/1080')] bg-cover bg-center opacity-40 pointer-events-none mix-blend-overlay" />
       
       <div className="fog-container">
         <div className="fog-layer"></div>

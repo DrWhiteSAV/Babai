@@ -112,7 +112,7 @@ export default function Chat() {
       exit={{ opacity: 0, x: -50 }}
       className="flex-1 flex flex-col bg-neutral-950 text-neutral-200 relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/chatbg/1080/1920?blur=3')] bg-cover bg-center opacity-20 pointer-events-none mix-blend-overlay" />
+      <div className="absolute inset-0 bg-[url('https://picsum.photos/id/878/1920/1080')] bg-cover bg-center opacity-20 pointer-events-none mix-blend-overlay" />
       <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
