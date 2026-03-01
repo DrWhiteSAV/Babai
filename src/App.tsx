@@ -23,9 +23,10 @@ import Friends from "./pages/Friends";
 import Chat from "./pages/Chat";
 import Gallery from "./pages/Gallery";
 import Leaderboard from "./pages/Leaderboard";
+import AdminPic from "./pages/AdminPic";
 
 function AppContent() {
-  const { updateEnergy, settings, globalBackgroundUrl, setGlobalBackgroundUrl, character } = usePlayerStore();
+  const { updateEnergy, settings, globalBackgroundUrl, setGlobalBackgroundUrl, character, pageBackgrounds } = usePlayerStore();
   const { playClick } = useAudio(settings.musicVolume);
   const location = useLocation();
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
@@ -88,25 +89,6 @@ function AppContent() {
     document.documentElement.style.fontSize = `${settings.fontSize}px`;
   }, [settings.fontSize]);
 
-  const prevStyleRef = useRef(character?.style);
-  const prevThemeRef = useRef(settings.theme);
-
-  useEffect(() => {
-    const generateBg = async () => {
-      if (!character) return;
-      const interiors = ["квартира", "подъезд", "заброшенный дом", "подвал"];
-      const randomInterior = interiors[Math.floor(Math.random() * interiors.length)];
-      const url = await generateGlobalBackground(randomInterior, character.style, settings.theme);
-      setGlobalBackgroundUrl(url);
-    };
-
-    if (!globalBackgroundUrl || prevStyleRef.current !== character?.style || prevThemeRef.current !== settings.theme) {
-      generateBg();
-      prevStyleRef.current = character?.style;
-      prevThemeRef.current = settings.theme;
-    }
-  }, [character?.style, settings.theme, globalBackgroundUrl, setGlobalBackgroundUrl]);
-
   const fontFamilyMap: Record<string, string> = {
     "Inter": "font-inter",
     "Roboto": "font-roboto",
@@ -129,14 +111,23 @@ function AppContent() {
     settings.buttonSize === "small" ? "btn-small" :
     settings.buttonSize === "large" ? "btn-large" : "btn-medium";
 
+  const currentPath = location.pathname;
+  const customBg = pageBackgrounds?.[currentPath];
+  const activeBgUrl = customBg?.url || globalBackgroundUrl;
+  
+  // Calculate dimming values based on customBg.dimming (0-100)
+  // If no custom dimming, use default 80% to 95% gradient
+  const dimmingTop = customBg ? customBg.dimming / 100 : 0.8;
+  const dimmingBottom = customBg ? Math.min(1, (customBg.dimming + 15) / 100) : 0.95;
+
   return (
     <div 
       className={`min-h-screen bg-neutral-950 text-neutral-100 ${fontClass} ${themeClass} selection:bg-red-900 selection:text-white ${buttonSizeClass}`}
     >
       <div 
         className="w-full max-w-7xl mx-auto min-h-screen bg-neutral-900 shadow-2xl relative overflow-hidden flex flex-col md:flex-row pb-16 md:pb-0"
-        style={globalBackgroundUrl ? {
-          backgroundImage: `linear-gradient(to bottom, rgba(23, 23, 23, 0.8), rgba(23, 23, 23, 0.95)), url(${globalBackgroundUrl})`,
+        style={activeBgUrl ? {
+          backgroundImage: `linear-gradient(to bottom, rgba(23, 23, 23, ${dimmingTop}), rgba(23, 23, 23, ${dimmingBottom})), url(${activeBgUrl})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
@@ -154,6 +145,7 @@ function AppContent() {
           <Route path="/friends" element={<Friends />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/admin/pic" element={<AdminPic />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <BottomNav />

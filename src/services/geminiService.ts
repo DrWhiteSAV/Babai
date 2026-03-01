@@ -145,7 +145,7 @@ export const generateGlobalBackground = async (
   interfaceTheme: string,
 ) => {
   try {
-    const prompt = `Background image for a text RPG. A mysterious interior: ${interiorStyle}. Baba style: ${babaStyle}. Interface theme: ${interfaceTheme}. Atmospheric, empty hallways or rooms, cyber-slavic aesthetic. No characters. High quality, detailed.`;
+    const prompt = `Фон для текстовой RPG игры про кибер-славянского бабая. Фон должен соответствовать текущему стилю: ${interiorStyle}, стилю Бабы: ${babaStyle}, теме интерфейса: ${interfaceTheme} и общей теме игры (мрачный кибер-славянский хоррор). Атмосферные пустые коридоры или комнаты, без персонажей. Высокое качество, детализация, кинематографичное освещение.`;
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash-image",
       contents: { parts: [{ text: prompt }] },

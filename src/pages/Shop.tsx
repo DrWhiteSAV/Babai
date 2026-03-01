@@ -1,17 +1,20 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { usePlayerStore } from "../store/playerStore";
 import { motion, AnimatePresence } from "motion/react";
 import { ShoppingCart, ArrowLeft, Skull, Zap, Loader2, X, Sparkles } from "lucide-react";
 import { editAvatarWithItem } from "../services/geminiService";
 import CurrencyModal, { CurrencyType } from "../components/CurrencyModal";
-import TopBar from "../components/TopBar";
+import Header from "../components/Header";
 import { SHOP_ITEMS, BOSS_ITEMS } from "../data/items";
 
 export default function Shop() {
   const navigate = useNavigate();
-  const { fear, watermelons, inventory, buyItem, upgradeTelekinesis, upgradeBossLevel, bossLevel, character, updateCharacter, addToGallery } =
+  const location = useLocation();
+  const { fear, watermelons, inventory, buyItem, upgradeTelekinesis, upgradeBossLevel, bossLevel, character, updateCharacter, addToGallery, globalBackgroundUrl, pageBackgrounds } =
     usePlayerStore();
+  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
+  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
   const [isProcessing, setIsProcessing] = useState(false);
   const [infoModal, setInfoModal] = useState<{type: CurrencyType, y: number} | null>(null);
   const [selectedItem, setSelectedItem] = useState<{item: any, y: number} | null>(null);
@@ -103,15 +106,20 @@ export default function Shop() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col bg-neutral-950 text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col bg-neutral-950/80 text-neutral-200 relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[url('https://picsum.photos/id/878/1920/1080')] bg-cover bg-center opacity-20 pointer-events-none mix-blend-overlay" />
+      {activeBgUrl && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
+          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
+        />
+      )}
       <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
       </div>
 
-      <TopBar 
+      <Header 
         title={<><ShoppingCart size={20} /> Магазин</>} 
         backUrl="/hub" 
         onInfoClick={(type, e) => setInfoModal({type, y: e?.clientY || window.innerHeight / 2})} 
@@ -359,14 +367,17 @@ export default function Shop() {
 
       <AnimatePresence>
         {selectedItem && (
-          <div className="fixed inset-0 z-50 flex justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedItem(null)} style={{ alignItems: selectedItem.y ? 'flex-start' : 'center' }}>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedItem(null)}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: selectedItem.y ? selectedItem.y - 50 : 20 }}
-              animate={{ opacity: 1, scale: 1, y: selectedItem.y ? Math.max(20, Math.min(selectedItem.y - 150, window.innerHeight - 400)) : 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: selectedItem.y ? selectedItem.y - 50 : 20 }}
+              initial={{ opacity: 0, scale: 0.9, x: "-50%", y: "-50%" }}
+              animate={{ opacity: 1, scale: 1, x: "-50%", y: "-50%" }}
+              exit={{ opacity: 0, scale: 0.9, x: "-50%", y: "-50%" }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 max-w-sm w-full relative shadow-2xl"
-              style={selectedItem.y ? { marginTop: 0 } : {}}
+              className="fixed bg-neutral-900 border border-neutral-800 rounded-3xl p-6 max-w-sm w-[90%] shadow-2xl"
+              style={{ 
+                top: selectedItem.y ? Math.max(200, Math.min(selectedItem.y, window.innerHeight - 200)) : '50%', 
+                left: '50%' 
+              }}
             >
               <button onClick={() => setSelectedItem(null)} className="absolute top-4 right-4 text-neutral-400 hover:text-white p-2 bg-neutral-800 rounded-full transition-colors">
                 <X size={20} />
@@ -425,14 +436,17 @@ export default function Shop() {
 
       <AnimatePresence>
         {warningModal && (
-          <div className="fixed inset-0 z-50 flex justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setWarningModal(null)} style={{ alignItems: warningModal.y ? 'flex-start' : 'center' }}>
+          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={() => setWarningModal(null)}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: warningModal.y ? warningModal.y - 50 : 20 }}
-              animate={{ opacity: 1, scale: 1, y: warningModal.y ? Math.max(20, Math.min(warningModal.y - 150, window.innerHeight - 300)) : 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: warningModal.y ? warningModal.y - 50 : 20 }}
+              initial={{ opacity: 0, scale: 0.9, x: "-50%", y: "-50%" }}
+              animate={{ opacity: 1, scale: 1, x: "-50%", y: "-50%" }}
+              exit={{ opacity: 0, scale: 0.9, x: "-50%", y: "-50%" }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-neutral-900 border border-red-900/50 rounded-3xl p-6 max-w-sm w-full relative shadow-[0_0_40px_rgba(220,38,38,0.2)]"
-              style={warningModal.y ? { marginTop: 0 } : {}}
+              className="fixed bg-neutral-900 border border-red-900/50 rounded-3xl p-6 max-w-sm w-[90%] shadow-[0_0_40px_rgba(220,38,38,0.2)]"
+              style={{ 
+                top: warningModal.y ? Math.max(150, Math.min(warningModal.y, window.innerHeight - 150)) : '50%', 
+                left: '50%' 
+              }}
             >
               <button onClick={() => setWarningModal(null)} className="absolute top-4 right-4 text-neutral-400 hover:text-white p-2 bg-neutral-800 rounded-full transition-colors">
                 <X size={20} />

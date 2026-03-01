@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { usePlayerStore, ENERGY_REGEN_RATE } from "../store/playerStore";
 import {
   generateScenario,
@@ -31,8 +31,11 @@ interface Scenario {
 
 export default function Game() {
   const navigate = useNavigate();
-  const { character, fear, energy, useEnergy, addFear, settings, gallery, addToGallery, addWatermelons, inventory, watermelons, lastEnergyUpdate, bossLevel } =
+  const location = useLocation();
+  const { character, fear, energy, useEnergy, addFear, settings, gallery, addToGallery, addWatermelons, inventory, watermelons, lastEnergyUpdate, bossLevel, globalBackgroundUrl, pageBackgrounds } =
     usePlayerStore();
+  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
+  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
 
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [stage, setStage] = useState(1);
@@ -423,7 +426,13 @@ export default function Game() {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-neutral-950 text-white relative">
+    <div className="flex-1 flex flex-col bg-neutral-950/80 text-white relative">
+      {activeBgUrl && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
+          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
+        />
+      )}
       <AnimatePresence>
         {showScreamer && (
           <motion.div

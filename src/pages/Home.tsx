@@ -1,11 +1,14 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { usePlayerStore } from "../store/playerStore";
 import { motion } from "motion/react";
 import { Play, Settings as SettingsIcon, User } from "lucide-react";
 
 export default function Home() {
   const navigate = useNavigate();
-  const character = usePlayerStore((state) => state.character);
+  const location = useLocation();
+  const { character, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
+  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
+  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
 
   const handlePlay = () => {
     if (character) {
@@ -20,9 +23,14 @@ export default function Home() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden"
+      className="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden bg-neutral-950/80"
     >
-      <div className="absolute inset-0 bg-[url('https://picsum.photos/id/878/1920/1080')] bg-cover bg-center opacity-40 pointer-events-none mix-blend-overlay" />
+      {activeBgUrl && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
+          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
+        />
+      )}
       
       <div className="fog-container">
         <div className="fog-layer"></div>

@@ -14,7 +14,8 @@ interface Message {
 export default function Chat() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { character, friends, groupChats } = usePlayerStore();
+  const { character, friends, groupChats, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
+  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
   const friendName = location.state?.friendName;
   const groupId = location.state?.groupId;
   const friend = friends.find(f => f.name === friendName);
@@ -110,9 +111,14 @@ export default function Chat() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col bg-neutral-950 text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col bg-neutral-950/80 text-neutral-200 relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[url('https://picsum.photos/id/878/1920/1080')] bg-cover bg-center opacity-20 pointer-events-none mix-blend-overlay" />
+      {activeBgUrl && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-20 pointer-events-none mix-blend-overlay" 
+          style={{ backgroundImage: `url(${activeBgUrl})` }}
+        />
+      )}
       <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>

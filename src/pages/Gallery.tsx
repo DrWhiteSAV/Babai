@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { usePlayerStore } from "../store/playerStore";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, Image as ImageIcon, X, Download } from "lucide-react";
@@ -7,7 +7,10 @@ import { useAudio } from "../hooks/useAudio";
 
 export default function Gallery() {
   const navigate = useNavigate();
-  const { gallery, settings } = usePlayerStore();
+  const location = useLocation();
+  const { gallery, settings, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
+  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
+  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
   const { playClick } = useAudio(settings.musicVolume);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -16,9 +19,14 @@ export default function Gallery() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="flex-1 flex flex-col bg-neutral-950 text-neutral-200 relative overflow-hidden h-screen"
+      className="flex-1 flex flex-col bg-neutral-950/80 text-neutral-200 relative overflow-hidden h-screen"
     >
-      <div className="absolute inset-0 bg-[url('https://picsum.photos/id/887/1080/1920')] bg-cover bg-center opacity-20 pointer-events-none mix-blend-overlay" />
+      {activeBgUrl && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
+          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
+        />
+      )}
       <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>

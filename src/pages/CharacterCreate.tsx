@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { usePlayerStore, Gender, Style, DEFAULT_IMAGES } from "../store/playerStore";
 import { generateCharacterName, generateAvatar } from "../services/ai";
 import { motion } from "motion/react";
@@ -30,7 +30,10 @@ const WISHES_OPTIONS = [
 
 export default function CharacterCreate() {
   const navigate = useNavigate();
-  const setCharacter = usePlayerStore((state) => state.setCharacter);
+  const location = useLocation();
+  const { setCharacter, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
+  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
+  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
 
   const [gender, setGender] = useState<Gender | null>(null);
   const [style, setStyle] = useState<Style | null>(null);
@@ -78,9 +81,14 @@ export default function CharacterCreate() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col p-6 bg-neutral-950 text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col p-6 bg-neutral-950/80 text-neutral-200 relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[url('https://picsum.photos/id/877/1920/1080')] bg-cover bg-center opacity-20 pointer-events-none mix-blend-overlay" />
+      {activeBgUrl && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
+          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
+        />
+      )}
       <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>

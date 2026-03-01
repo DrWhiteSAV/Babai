@@ -20,15 +20,20 @@ export default function BottomNav() {
       ), 
       label: "Профиль" 
     },
-    { path: "/friends", icon: <Users size={24} />, label: "Друзья" },
     { path: "/settings", icon: <Settings size={24} />, label: "Настройки" },
+    { path: "/friends", icon: <Users size={24} />, label: "Друзья" },
   ];
 
-  // Don't show on initial setup screens
-  if (['/', '/create'].includes(location.pathname)) return null;
+  // Don't show on initial setup screens or game
+  if (['/', '/create', '/game'].includes(location.pathname)) return null;
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-neutral-900/90 backdrop-blur-lg border-t border-neutral-800 z-50 pb-safe">
+    <motion.div 
+      initial={{ y: 100 }}
+      animate={{ y: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="md:hidden fixed bottom-0 left-0 right-0 bg-neutral-900/90 backdrop-blur-lg border-t border-neutral-800 z-50 pb-safe"
+    >
       <div className="flex justify-around items-center p-2">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -37,7 +42,7 @@ export default function BottomNav() {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={`relative flex flex-col items-center justify-center w-16 h-14 transition-colors ${
-                isActive ? "text-red-500" : "text-neutral-400 hover:text-neutral-200"
+                isActive ? "text-white" : "text-neutral-500 hover:text-neutral-300"
               }`}
             >
               <motion.div
@@ -55,7 +60,7 @@ export default function BottomNav() {
               {isActive && (
                 <motion.div
                   layoutId="bottomNavIndicator"
-                  className="absolute -bottom-2 w-8 h-1 bg-red-500 rounded-t-full"
+                  className="absolute -bottom-2 w-8 h-1 bg-white rounded-t-full"
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 />
               )}
@@ -63,6 +68,6 @@ export default function BottomNav() {
           );
         })}
       </div>
-    </div>
+    </motion.div>
   );
 }

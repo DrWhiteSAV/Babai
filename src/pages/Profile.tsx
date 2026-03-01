@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { usePlayerStore, DEFAULT_IMAGES } from "../store/playerStore";
 import { motion } from "motion/react";
 import { User, ArrowLeft, Copy, Share2, Trophy, Camera, BookOpen, Loader2, Image as ImageIcon, Volume2, VolumeX, X } from "lucide-react";
@@ -10,7 +10,10 @@ import { SHOP_ITEMS, BOSS_ITEMS } from "../data/items";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { character, fear, energy, watermelons, inventory, updateCharacter, gallery, addToGallery, settings, updateSettings } = usePlayerStore();
+  const location = useLocation();
+  const { character, fear, energy, watermelons, inventory, updateCharacter, gallery, addToGallery, settings, updateSettings, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
+  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
+  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
   const profileRef = useRef<HTMLDivElement>(null);
   const [isGeneratingLore, setIsGeneratingLore] = useState(false);
   const [infoModal, setInfoModal] = useState<CurrencyType>(null);
@@ -69,9 +72,14 @@ export default function Profile() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col bg-neutral-950 text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col bg-neutral-950/80 text-neutral-200 relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[url('https://picsum.photos/id/878/1920/1080')] bg-cover bg-center opacity-20 pointer-events-none mix-blend-overlay" />
+      {activeBgUrl && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
+          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
+        />
+      )}
       <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
@@ -247,7 +255,7 @@ export default function Profile() {
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   key={i}
-                  onClick={() => setSelectedItem(item)}
+                  onClick={(e) => setSelectedItem({item, y: e.clientY})}
                   className={`border rounded-xl p-3 flex flex-col items-center text-center gap-2 transition-colors cursor-pointer ${isOwned ? 'bg-neutral-900 border-neutral-600 hover:border-red-500' : 'bg-neutral-950 border-neutral-800 opacity-50 hover:opacity-80'}`}
                 >
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${isOwned ? 'bg-neutral-800' : 'bg-neutral-900 grayscale'}`}>
@@ -291,11 +299,17 @@ export default function Profile() {
 
       {/* Item Modal */}
       {selectedItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedItem(null)}>
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 max-w-sm w-full relative"
+            initial={{ opacity: 0, scale: 0.9, x: "-50%", y: "-50%" }}
+            animate={{ opacity: 1, scale: 1, x: "-50%", y: "-50%" }}
+            exit={{ opacity: 0, scale: 0.9, x: "-50%", y: "-50%" }}
+            onClick={(e) => e.stopPropagation()}
+            className="fixed bg-neutral-900 border border-neutral-800 rounded-3xl p-6 max-w-sm w-[90%] shadow-2xl"
+            style={{ 
+              top: selectedItem.y ? Math.max(200, Math.min(selectedItem.y, window.innerHeight - 200)) : '50%', 
+              left: '50%' 
+            }}
           >
             <button
               onClick={() => setSelectedItem(null)}
@@ -306,16 +320,16 @@ export default function Profile() {
 
             <div className="flex flex-col items-center text-center mt-4">
               <div className="w-24 h-24 rounded-3xl bg-neutral-800 flex items-center justify-center text-5xl mb-4 shadow-inner">
-                {selectedItem.icon}
+                {selectedItem.item.icon}
               </div>
               <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-1">
-                {selectedItem.name}
+                {selectedItem.item.name}
               </h3>
               <p className="text-xs text-neutral-500 uppercase tracking-widest mb-4">
-                {selectedItem.type}
+                {selectedItem.item.type}
               </p>
               <p className="text-neutral-300 text-sm leading-relaxed">
-                {selectedItem.description}
+                {selectedItem.item.description}
               </p>
             </div>
           </motion.div>

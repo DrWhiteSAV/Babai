@@ -82,6 +82,7 @@ export interface PlayerState {
     ttsEnabled: boolean;
   };
   globalBackgroundUrl: string | null;
+  pageBackgrounds: Record<string, { url: string; dimming: number }>;
   setCharacter: (char: Character) => void;
   updateCharacter: (updates: Partial<Character>) => void;
   addFear: (amount: number) => void;
@@ -93,6 +94,7 @@ export interface PlayerState {
   updateEnergy: () => void;
   updateSettings: (settings: Partial<PlayerState["settings"]>) => void;
   setGlobalBackgroundUrl: (url: string) => void;
+  setPageBackground: (page: string, url: string, dimming: number) => void;
   buyItem: (item: string, cost: number, currency?: 'fear' | 'watermelons') => boolean;
   addToGallery: (url: string) => void;
   upgradeTelekinesis: (cost: number) => boolean;
@@ -143,6 +145,7 @@ export const usePlayerStore = create<PlayerState>()(
         ttsEnabled: false,
       },
       globalBackgroundUrl: null,
+      pageBackgrounds: {},
       setCharacter: (char) => {
         const { addToGallery } = get();
         set({ character: char });
@@ -197,6 +200,12 @@ export const usePlayerStore = create<PlayerState>()(
       updateSettings: (newSettings) =>
         set((state) => ({ settings: { ...state.settings, ...newSettings } })),
       setGlobalBackgroundUrl: (url) => set({ globalBackgroundUrl: url }),
+      setPageBackground: (page, url, dimming) => set((state) => ({
+        pageBackgrounds: {
+          ...state.pageBackgrounds,
+          [page]: { url, dimming }
+        }
+      })),
       buyItem: (item, cost, currency = 'fear') => {
         const { fear, watermelons, inventory } = get();
         if (inventory.includes(item)) return false;

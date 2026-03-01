@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import Header from "../components/Header";
 import { usePlayerStore, ENERGY_REGEN_RATE } from "../store/playerStore";
 import { motion } from "motion/react";
 import {
@@ -16,90 +17,55 @@ import CurrencyModal, { CurrencyType } from "../components/CurrencyModal";
 
 export default function GameHub() {
   const navigate = useNavigate();
-  const { character, fear, energy, watermelons, lastEnergyUpdate } = usePlayerStore();
-  const [timeLeft, setTimeLeft] = useState(0);
+  const location = useLocation();
+  const { character, fear, energy, watermelons, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
+  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
+  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
   const [infoModal, setInfoModal] = useState<CurrencyType>(null);
-
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const now = Date.now();
-      const diff = now - lastEnergyUpdate;
-      const remaining = ENERGY_REGEN_RATE - (diff % ENERGY_REGEN_RATE);
-      setTimeLeft(Math.floor(remaining / 1000));
-    };
-
-    calculateTimeLeft();
-    const interval = setInterval(calculateTimeLeft, 1000);
-    return () => clearInterval(interval);
-  }, [lastEnergyUpdate]);
 
   if (!character) {
     navigate("/");
     return null;
   }
 
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s.toString().padStart(2, "0")}`;
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="flex-1 flex flex-col bg-neutral-650 text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col bg-neutral-950/80 text-neutral-200 relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[url('https://picsum.photos/id/945/1080/1920')] bg-cover bg-center opacity-30 pointer-events-none mix-blend-overlay" />
+      {activeBgUrl && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
+          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
+        />
+      )}
       
       <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
       </div>
 
-      {/* Header Stats */}
-      <header className="flex items-center justify-between p-4 bg-neutral-900/80 backdrop-blur-md border-b border-neutral-800 sticky top-0 z-20">
-        <div className="flex gap-4">
-          <div 
-            className="flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => setInfoModal('energy')}
-          >
-            <div className="flex items-center gap-1 text-yellow-500 font-bold">
-              <Zap size={16} /> {energy}
-            </div>
-            <div className="text-[10px] text-yellow-500/70 font-bold -mt-1">
-              {formatTime(timeLeft)}
-            </div>
-          </div>
-          <div 
-            className="flex items-center gap-1 text-red-500 font-bold cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => setInfoModal('fear')}
-          >
-            <Skull size={16} /> {fear}
-          </div>
-          <div 
-            className="flex items-center gap-1 text-green-500 font-bold cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => setInfoModal('watermelons')}
-          >
-            🍉 {watermelons}
-          </div>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => navigate("/profile")}
-            className="p-2 hover:bg-neutral-800 rounded-full transition-colors flex items-center justify-center"
-          >
-            <img src={character.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-neutral-500" />
-          </button>
-          <button
-            onClick={() => navigate("/settings")}
-            className="p-2 hover:bg-neutral-800 rounded-full transition-colors text-neutral-400 hover:text-white"
-          >
-            <Settings size={20} />
-          </button>
-        </div>
-      </header>
+      <Header 
+        onInfoClick={(type) => setInfoModal(type)}
+        rightContent={
+          <>
+            <button
+              onClick={() => navigate("/profile")}
+              className="p-2 hover:bg-neutral-800 rounded-full transition-colors flex items-center justify-center"
+            >
+              <img src={character.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-neutral-500" />
+            </button>
+            <button
+              onClick={() => navigate("/settings")}
+              className="p-2 hover:bg-neutral-800 rounded-full transition-colors text-neutral-400 hover:text-white"
+            >
+              <Settings size={20} />
+            </button>
+          </>
+        }
+      />
 
       {/* Character Display */}
       <div className="relative flex-1 flex flex-col items-center justify-center p-6 overflow-hidden">
