@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { usePlayerStore } from "../store/playerStore";
 import { motion } from "motion/react";
 import { ArrowLeft, Users, UserPlus, Zap, MessageSquare, Link, Copy, Plus, X } from "lucide-react";
+import Header from "../components/Header";
+import { transliterate } from "../utils/transliterate";
 
 export default function Friends() {
   const navigate = useNavigate();
@@ -28,7 +30,8 @@ export default function Friends() {
   };
 
   const handleCopyRef = () => {
-    navigator.clipboard.writeText(`https://bab-ai.ru/invite/${character.name}`);
+    const latinName = transliterate(character.name).replace(/\s+/g, "").toLowerCase();
+    navigator.clipboard.writeText(`https://bab-ai.ru/invite/${latinName}`);
     alert("Реферальная ссылка скопирована! За каждого друга вы получите 100 энергии и 100 страха.");
     // Simulate someone joining via ref link
     setTimeout(() => {
@@ -81,18 +84,10 @@ export default function Friends() {
         <div className="fog-layer-2"></div>
       </div>
 
-      <header className="flex items-center justify-between p-4 bg-neutral-900 border-b border-neutral-800 sticky top-0 z-20">
-        <button
-          onClick={() => navigate("/hub")}
-          className="p-2 hover:bg-neutral-800 rounded-full transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold uppercase tracking-widest flex items-center gap-2">
-          <Users size={20} /> Друзья
-        </h1>
-        <div className="w-10" />
-      </header>
+      <Header 
+        title={<><Users size={20} /> Друзья</>}
+        backUrl="/hub"
+      />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8 relative z-10">
         <section className="bg-neutral-900/80 backdrop-blur-md p-6 rounded-2xl border border-neutral-800">

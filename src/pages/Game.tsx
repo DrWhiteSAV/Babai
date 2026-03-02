@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Loader2,
   ArrowRight,
+  ArrowLeft,
   Skull,
   Zap,
   MessageSquare,
@@ -320,6 +321,32 @@ export default function Game() {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
+  const [isPvpLobby, setIsPvpLobby] = useState(false);
+  const [pvpParticipants, setPvpParticipants] = useState<string[]>([]);
+  const { friends } = usePlayerStore();
+
+  const handleInviteFriend = (friendName: string) => {
+    if (!pvpParticipants.includes(friendName)) {
+      setPvpParticipants([...pvpParticipants, friendName]);
+    }
+  };
+
+  const startPvpGame = async (diff: Difficulty) => {
+    const cost = diff === "Сложная" ? 1 : diff === "Невозможная" ? 5 : 25;
+    if (!useEnergy(cost)) {
+      alert("Недостаточно энергии!");
+      return;
+    }
+
+    setDifficulty(diff);
+    setMaxStages(diff === "Сложная" ? 15 : diff === "Невозможная" ? 45 : Infinity);
+    setStage(1);
+    setScore(0);
+    setIsGameOver(false);
+    setIsPvpLobby(false);
+    await loadNextStage(1);
+  };
+
   if (isGameOver) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 bg-neutral-950 text-white text-center">
@@ -420,6 +447,80 @@ export default function Game() {
               <Zap size={12} className="inline text-yellow-500" />
             </p>
           </button>
+          <button
+            onClick={() => setIsPvpLobby(true)}
+            className="w-full p-6 bg-neutral-900 border border-neutral-800 rounded-2xl text-left hover:border-red-900 transition-colors group lightning-btn"
+          >
+            <h3 className="text-xl font-bold text-white group-hover:text-red-500 transition-colors">
+              PVP Бабаев
+            </h3>
+            <p className="text-neutral-400 text-sm mt-1">
+              Групповое участие с друзьями.
+            </p>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isPvpLobby) {
+    return (
+      <div className="flex-1 flex flex-col p-6 bg-neutral-950 text-white">
+        <header className="flex justify-between items-center mb-8">
+          <button
+            onClick={() => setIsPvpLobby(false)}
+            className="p-2 bg-neutral-900 rounded-full"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-xl font-bold uppercase tracking-widest">PVP Комната</h1>
+          <div className="w-10" />
+        </header>
+
+        <div className="flex-1 overflow-y-auto space-y-6">
+          <section>
+            <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider">
+              Пригласить друзей
+            </h2>
+            <div className="space-y-2">
+              {friends.map(friend => (
+                <div key={friend.name} className="flex items-center justify-between p-3 bg-neutral-900 rounded-xl border border-neutral-800">
+                  <span className="font-bold">{friend.name}</span>
+                  <button
+                    onClick={() => handleInviteFriend(friend.name)}
+                    disabled={pvpParticipants.includes(friend.name)}
+                    className="px-4 py-2 bg-red-900 hover:bg-red-800 rounded-lg text-sm font-bold disabled:opacity-50"
+                  >
+                    {pvpParticipants.includes(friend.name) ? "Приглашен" : "Пригласить"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {pvpParticipants.length > 0 && (
+            <section>
+              <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider">
+                Выберите сложность
+              </h2>
+              <div className="space-y-4">
+                <button
+                  onClick={() => startPvpGame("Сложная")}
+                  className="w-full p-4 bg-neutral-900 border border-neutral-800 rounded-xl text-left hover:border-red-900 transition-colors"
+                >
+                  <h3 className="text-lg font-bold text-white">Сложная (15 этапов)</h3>
+                  <p className="text-neutral-400 text-sm mt-1">Стоимость: 1 <Zap size={12} className="inline text-yellow-500" /></p>
+                </button>
+                <button
+                  onClick={() => startPvpGame("Невозможная")}
+                  className="w-full p-4 bg-neutral-900 border border-neutral-800 rounded-xl text-left hover:border-red-900 transition-colors"
+                >
+                  <h3 className="text-lg font-bold text-white">Невозможная (45 этапов)</h3>
+                  <p className="text-neutral-400 text-sm mt-1">Стоимость: 5 <Zap size={12} className="inline text-yellow-500" /></p>
+                </button>
+              </div>
+            </section>
+          )}
         </div>
       </div>
     );

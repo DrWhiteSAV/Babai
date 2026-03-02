@@ -3,6 +3,8 @@ import { usePlayerStore } from "../store/playerStore";
 import { motion } from "motion/react";
 import { ArrowLeft, Trophy, Medal, Star, Target, CheckCircle2 } from "lucide-react";
 
+import Header from "../components/Header";
+
 export default function Leaderboard() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,18 +38,10 @@ export default function Leaderboard() {
         />
       )}
       
-      <header className="flex items-center justify-between p-4 bg-neutral-900 border-b border-neutral-800 sticky top-0 z-20">
-        <button
-          onClick={() => navigate("/hub")}
-          className="p-2 hover:bg-neutral-800 rounded-full transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold uppercase tracking-widest flex items-center gap-2">
-          <Trophy size={20} className="text-yellow-500" /> Рейтинг
-        </h1>
-        <div className="w-10" />
-      </header>
+      <Header 
+        title={<><Trophy size={20} className="text-yellow-500" /> Рейтинг</>}
+        backUrl="/hub"
+      />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-8 relative z-10">
         

@@ -11,6 +11,8 @@ import {
   Square,
 } from "lucide-react";
 
+import Header from "../components/Header";
+
 export default function Settings() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -61,18 +63,10 @@ export default function Settings() {
         <div className="fog-layer-2"></div>
       </div>
 
-      <header className="flex items-center justify-between p-4 bg-neutral-900 border-b border-neutral-800 sticky top-0 z-20">
-        <button
-          onClick={() => navigate("/hub")}
-          className="p-2 hover:bg-neutral-800 rounded-full transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold uppercase tracking-widest flex items-center gap-2">
-          <SettingsIcon size={20} /> Настройки
-        </h1>
-        <div className="w-10" /> {/* Spacer */}
-      </header>
+      <Header 
+        title={<><SettingsIcon size={20} /> Настройки</>}
+        backUrl="/hub"
+      />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8">
         {/* Button Size */}

@@ -7,7 +7,7 @@ interface HeaderProps {
   title?: ReactNode;
   backUrl?: string;
   onInfoClick?: (type: 'fear' | 'watermelons' | 'energy', e: MouseEvent) => void;
-  rightContent?: ReactNode;
+  rightContent?: ReactNode; // We will use this for the profile icons
 }
 
 export default function Header({ title, backUrl, onInfoClick, rightContent }: HeaderProps) {
@@ -35,56 +35,63 @@ export default function Header({ title, backUrl, onInfoClick, rightContent }: He
   };
 
   return (
-    <header className="flex flex-col md:flex-row items-center justify-between p-4 bg-neutral-900/80 backdrop-blur-md border-b border-neutral-800 sticky top-0 z-20">
-      {/* Mobile: Stats on top, centered */}
-      <div className="flex justify-center gap-4 w-full md:w-auto order-1 md:order-2 mb-4 md:mb-0">
-        <div 
-          className="flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={(e) => onInfoClick?.('energy', e)}
-        >
-          <div className="flex items-center gap-1 text-yellow-500 font-bold">
-            <Zap size={16} /> {energy}
-          </div>
-          <div className="text-[10px] text-yellow-500/70 font-bold -mt-1">
-            {formatTime(timeLeft)}
-          </div>
-        </div>
-        <div 
-          className="flex items-center gap-1 text-red-500 font-bold cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={(e) => onInfoClick?.('fear', e)}
-        >
-          <Skull size={16} /> {fear}
-        </div>
-        <div 
-          className="flex items-center gap-1 text-green-500 font-bold cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={(e) => onInfoClick?.('watermelons', e)}
-        >
-          🍉 {watermelons}
-        </div>
-      </div>
-
-      {/* Mobile: Back button and Title below */}
-      <div className="flex items-center justify-between w-full md:w-auto order-2 md:order-1 mt-4 md:mt-0">
-        {backUrl ? (
+    <header 
+      className="relative p-4 bg-neutral-900/80 backdrop-blur-md border-b border-neutral-800 sticky top-0 z-20 shrink-0"
+      style={{ fontSize: '16px' }} // Fixed font size for header
+    >
+      {/* Back Button (absolute top-left, with 1 row padding equivalent) */}
+      {backUrl && (
+        <div className="absolute left-4 top-4 mt-6">
           <button
             onClick={() => navigate(backUrl)}
             className="p-2 hover:bg-neutral-800 rounded-full transition-colors"
           >
             <ArrowLeft size={20} />
           </button>
-        ) : (
-          <div className="w-10 md:hidden" />
+        </div>
+      )}
+
+      <div className="flex flex-col items-center justify-center w-full">
+        {/* Row 1: Stats */}
+        <div className="flex items-center justify-center gap-4 mb-2">
+          <div 
+            className="flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={(e) => onInfoClick?.('energy', e)}
+          >
+            <div className="flex items-center gap-1 text-yellow-500 font-bold">
+              <Zap size={16} /> {energy}
+            </div>
+            <div className="text-[10px] text-yellow-500/70 font-bold -mt-1">
+              {formatTime(timeLeft)}
+            </div>
+          </div>
+          <div 
+            className="flex items-center gap-1 text-red-500 font-bold cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={(e) => onInfoClick?.('fear', e)}
+          >
+            <Skull size={16} /> {fear}
+          </div>
+          <div 
+            className="flex items-center gap-1 text-green-500 font-bold cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={(e) => onInfoClick?.('watermelons', e)}
+          >
+            🍉 {watermelons}
+          </div>
+        </div>
+
+        {/* Extra Content (Profile icons) */}
+        {rightContent && (
+          <div className="flex justify-center w-full mb-2">
+            {rightContent}
+          </div>
         )}
-        
+
+        {/* Row 2: Title */}
         {title && (
-          <h1 className="text-xl font-bold uppercase tracking-widest flex items-center gap-2 px-2">
+          <h1 className="text-xl font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2">
             {title}
           </h1>
         )}
-        
-        <div className="flex gap-2 md:order-3">
-          {rightContent}
-        </div>
       </div>
     </header>
   );

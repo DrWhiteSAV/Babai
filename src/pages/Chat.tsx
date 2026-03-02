@@ -11,6 +11,8 @@ interface Message {
   imageUrl?: string;
 }
 
+import Header from "../components/Header";
+
 export default function Chat() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -124,18 +126,10 @@ export default function Chat() {
         <div className="fog-layer-2"></div>
       </div>
 
-      <header className="flex items-center justify-between p-4 bg-neutral-900 border-b border-neutral-800 sticky top-0 z-20">
-        <button
-          onClick={() => navigate("/friends")}
-          className="p-2 hover:bg-neutral-800 rounded-full transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold uppercase tracking-widest flex items-center gap-2">
-          <MessageSquare size={20} /> Чат: {chatTitle}
-        </h1>
-        <div className="w-10" />
-      </header>
+      <Header 
+        title={<><MessageSquare size={20} /> Чат: {chatTitle}</>}
+        backUrl="/friends"
+      />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4 relative z-10">
         {messages.length === 0 && (

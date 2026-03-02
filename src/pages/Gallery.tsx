@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, Image as ImageIcon, X, Download } from "lucide-react";
 import { useAudio } from "../hooks/useAudio";
 
+import Header from "../components/Header";
+
 export default function Gallery() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,18 +34,10 @@ export default function Gallery() {
         <div className="fog-layer-2"></div>
       </div>
 
-      <header className="flex items-center justify-between p-4 bg-neutral-900 border-b border-neutral-800 sticky top-0 z-20">
-        <button
-          onClick={() => navigate("/profile")}
-          className="p-2 hover:bg-neutral-800 rounded-full transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold uppercase tracking-widest flex items-center gap-2">
-          <ImageIcon size={20} /> Галерея
-        </h1>
-        <div className="w-10" />
-      </header>
+      <Header 
+        title={<><ImageIcon size={20} /> Галерея</>}
+        backUrl="/profile"
+      />
 
       <div className="bg-red-900/20 border-b border-red-900/30 p-2 text-[10px] text-center text-red-300 uppercase tracking-tighter">
         Память духа ограничена. Хранятся только последние 6 образов.

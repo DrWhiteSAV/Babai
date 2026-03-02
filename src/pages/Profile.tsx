@@ -7,6 +7,8 @@ import * as htmlToImage from 'html-to-image';
 import { generateLore } from "../services/geminiService";
 import CurrencyModal, { CurrencyType } from "../components/CurrencyModal";
 import { SHOP_ITEMS, BOSS_ITEMS } from "../data/items";
+import Header from "../components/Header";
+import { transliterate } from "../utils/transliterate";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -45,7 +47,8 @@ export default function Profile() {
   };
 
   const handleCopyRef = () => {
-    navigator.clipboard.writeText(`https://bab-ai.ru/invite/${character.name.replace(/\s+/g, "").toLowerCase()}`);
+    const latinName = transliterate(character.name).replace(/\s+/g, "").toLowerCase();
+    navigator.clipboard.writeText(`https://bab-ai.ru/invite/${latinName}`);
     alert("Ссылка скопирована!");
   };
 
@@ -85,40 +88,36 @@ export default function Profile() {
         <div className="fog-layer-2"></div>
       </div>
 
-      <header className="flex items-center justify-between p-4 bg-neutral-900 border-b border-neutral-800 sticky top-0 z-20">
-        <button
-          onClick={() => navigate("/hub")}
-          className="p-2 hover:bg-neutral-800 rounded-full transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-xl font-bold uppercase tracking-widest flex items-center gap-2">
-          <User size={20} /> Профиль
-        </h1>
-        <div className="flex gap-2">
-          <button
-            onClick={() => updateSettings({ ttsEnabled: !settings.ttsEnabled })}
-            className={`p-2 rounded-full transition-colors ${settings.ttsEnabled ? 'text-green-500 hover:bg-neutral-800' : 'text-neutral-500 hover:bg-neutral-800'}`}
-            title={settings.ttsEnabled ? "Озвучка включена" : "Озвучка выключена"}
-          >
-            {settings.ttsEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
-          </button>
-          <button
-            onClick={() => navigate("/gallery")}
-            className="p-2 hover:bg-neutral-800 rounded-full transition-colors text-neutral-400"
-            title="Галерея"
-          >
-            <ImageIcon size={20} />
-          </button>
-          <button
-            onClick={takeScreenshot}
-            className="p-2 hover:bg-neutral-800 rounded-full transition-colors text-red-500"
-            title="Сделать скриншот"
-          >
-            <Camera size={20} />
-          </button>
-        </div>
-      </header>
+      <Header 
+        title={<><User size={20} /> Профиль</>}
+        backUrl="/hub"
+        onInfoClick={(type, e) => setInfoModal(type)}
+        rightContent={
+          <div className="flex gap-4">
+            <button
+              onClick={() => updateSettings({ ttsEnabled: !settings.ttsEnabled })}
+              className={`p-2 rounded-full transition-colors ${settings.ttsEnabled ? 'text-green-500 hover:bg-neutral-800' : 'text-neutral-500 hover:bg-neutral-800'}`}
+              title={settings.ttsEnabled ? "Озвучка включена" : "Озвучка выключена"}
+            >
+              {settings.ttsEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+            </button>
+            <button
+              onClick={() => navigate("/gallery")}
+              className="p-2 hover:bg-neutral-800 rounded-full transition-colors text-neutral-400"
+              title="Галерея"
+            >
+              <ImageIcon size={20} />
+            </button>
+            <button
+              onClick={takeScreenshot}
+              className="p-2 hover:bg-neutral-800 rounded-full transition-colors text-red-500"
+              title="Сделать скриншот"
+            >
+              <Camera size={20} />
+            </button>
+          </div>
+        }
+      />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8" ref={profileRef}>
         {/* Avatar & Info */}
