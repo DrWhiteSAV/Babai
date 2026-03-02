@@ -1,16 +1,18 @@
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { usePlayerStore } from "../store/playerStore";
 import { motion } from "motion/react";
-import { ArrowLeft, Trophy, Medal, Star, Target, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Trophy, Medal, Star, Target, CheckCircle2, ChevronRight } from "lucide-react";
 
 import Header from "../components/Header";
+import ProfilePopup from "../components/ProfilePopup";
 
 export default function Leaderboard() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { character, quests, achievements, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
-  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
-  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
+  const { character, achievements, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
+    
+  const [showProfilePopup, setShowProfilePopup] = useState<string | null>(null);
 
   // Mock leaderboard data
   const leaderboard = [
@@ -21,23 +23,14 @@ export default function Leaderboard() {
     { rank: 5, name: "Скример", score: 7100, avatar: "https://picsum.photos/seed/b4/100/100" },
   ];
 
-  const dailyQuests = quests.filter(q => q.type === 'daily');
-  const globalQuests = quests.filter(q => q.type === 'global');
-
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.05 }}
-      className="flex-1 flex flex-col bg-neutral-950/80 text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col bg-transparent text-neutral-200 relative overflow-hidden"
     >
-      {activeBgUrl && (
-        <div 
-          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
-          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
-        />
-      )}
-      
+            
       <Header 
         title={<><Trophy size={20} className="text-yellow-500" /> Рейтинг</>}
         backUrl="/hub"
@@ -63,9 +56,19 @@ export default function Leaderboard() {
                 }`}>
                   {user.rank}
                 </div>
-                <img src={user.avatar} alt={user.name} className="w-12 h-12 rounded-full border border-neutral-700 object-cover" />
+                <img 
+                  src={user.avatar} 
+                  alt={user.name} 
+                  className="w-12 h-12 rounded-full border border-neutral-700 object-cover cursor-pointer" 
+                  onClick={() => setShowProfilePopup(user.isUser ? "user" : user.name)}
+                />
                 <div className="flex-1">
-                  <h3 className={`font-bold ${user.isUser ? 'text-red-400' : 'text-white'}`}>{user.name}</h3>
+                  <h3 
+                    className={`font-bold cursor-pointer hover:underline ${user.isUser ? 'text-red-400' : 'text-white'}`}
+                    onClick={() => setShowProfilePopup(user.isUser ? "user" : user.name)}
+                  >
+                    {user.name}
+                  </h3>
                   <p className="text-sm text-neutral-500">{user.score} очков страха</p>
                 </div>
               </div>
@@ -73,27 +76,23 @@ export default function Leaderboard() {
           </div>
         </section>
 
-        {/* Quests Section */}
+        {/* Events Link Section */}
         <section>
-          <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider flex items-center gap-2">
-            <Target size={20} className="text-red-500" /> Ежедневные задания
-          </h2>
-          <div className="space-y-3">
-            {dailyQuests.map(quest => (
-              <QuestCard key={quest.id} quest={quest} />
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider flex items-center gap-2">
-            <Star size={20} className="text-blue-500" /> Глобальные задания
-          </h2>
-          <div className="space-y-3">
-            {globalQuests.map(quest => (
-              <QuestCard key={quest.id} quest={quest} />
-            ))}
-          </div>
+          <button 
+            onClick={() => navigate('/events')}
+            className="w-full bg-neutral-900 border border-neutral-800 hover:border-red-900/50 rounded-2xl p-4 flex items-center justify-between transition-colors group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-900/20 text-red-500 flex items-center justify-center">
+                <Target size={20} />
+              </div>
+              <div className="text-left">
+                <h2 className="text-lg font-bold text-white uppercase tracking-wider">Ивенты и Задания</h2>
+                <p className="text-sm text-neutral-400">Ежедневные и глобальные квесты</p>
+              </div>
+            </div>
+            <ChevronRight size={24} className="text-neutral-500 group-hover:text-white transition-colors" />
+          </button>
         </section>
 
         {/* Achievements Section */}
@@ -121,49 +120,10 @@ export default function Leaderboard() {
         </section>
 
       </div>
-    </motion.div>
-  );
-}
 
-function QuestCard({ quest }: { quest: any; key?: string | number }) {
-  const { completeQuest } = usePlayerStore();
-  
-  const isReady = quest.progress >= quest.target;
-  
-  return (
-    <div className={`bg-neutral-900 border rounded-2xl p-4 ${quest.completed ? 'border-green-900/50 opacity-50' : isReady ? 'border-red-500' : 'border-neutral-800'}`}>
-      <div className="flex justify-between items-start mb-2">
-        <div>
-          <h3 className="font-bold text-white">{quest.title}</h3>
-          <p className="text-sm text-neutral-400">{quest.description}</p>
-        </div>
-        <div className="text-right">
-          <span className="text-xs font-bold px-2 py-1 rounded bg-neutral-800 text-neutral-300">
-            +{quest.reward.amount} {quest.reward.type === 'fear' ? 'Страха' : quest.reward.type === 'energy' ? 'Энергии' : 'Арбузов'}
-          </span>
-        </div>
-      </div>
-      
-      <div className="mt-4 flex items-center gap-4">
-        <div className="flex-1 bg-neutral-950 h-2 rounded-full overflow-hidden">
-          <div 
-            className={`h-full ${quest.completed ? 'bg-green-500' : 'bg-red-600'}`}
-            style={{ width: `${Math.min(100, (quest.progress / quest.target) * 100)}%` }}
-          />
-        </div>
-        <span className="text-xs font-mono text-neutral-500 w-12 text-right">
-          {quest.progress}/{quest.target}
-        </span>
-      </div>
-
-      {!quest.completed && isReady && (
-        <button 
-          onClick={() => completeQuest(quest.id)}
-          className="mt-4 w-full py-2 bg-red-700 hover:bg-red-600 text-white rounded-xl font-bold transition-colors"
-        >
-          Забрать награду
-        </button>
+      {showProfilePopup && (
+        <ProfilePopup name={showProfilePopup} onClose={() => setShowProfilePopup(null)} />
       )}
-    </div>
+    </motion.div>
   );
 }

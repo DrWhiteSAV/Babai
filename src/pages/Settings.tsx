@@ -17,9 +17,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const location = useLocation();
   const { settings, updateSettings, character, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
-  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
-  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
-
+    
   if (!character) {
     navigate("/");
     return null;
@@ -50,15 +48,9 @@ export default function Settings() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col bg-neutral-950/80 text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col bg-transparent text-neutral-200 relative overflow-hidden"
     >
-      {activeBgUrl && (
-        <div 
-          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
-          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
-        />
-      )}
-      <div className="fog-container">
+            <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
       </div>
@@ -132,6 +124,7 @@ export default function Settings() {
               <option value="Rubik Glitch" style={{ fontFamily: "'Rubik Glitch', cursive" }}>Глитч (Rubik Glitch)</option>
               <option value="Neucha" style={{ fontFamily: "'Neucha', cursive" }}>Рукописный (Neucha)</option>
               <option value="Ruslan Display" style={{ fontFamily: "'Ruslan Display', cursive" }}>Славянский (Ruslan)</option>
+              <option value="Tektur" style={{ fontFamily: "'Tektur', sans-serif" }}>Киберпанк (Tektur)</option>
             </select>
           </div>
         </section>

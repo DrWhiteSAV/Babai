@@ -9,7 +9,6 @@ import { usePlayerStore } from "./store/playerStore";
 import { useEffect, useRef } from "react";
 import { useAudio, menuMusic, bgMusics } from "./hooks/useAudio";
 import BottomNav from "./components/BottomNav";
-import { generateGlobalBackground } from "./services/geminiService";
 
 // Pages
 import Home from "./pages/Home";
@@ -23,7 +22,7 @@ import Friends from "./pages/Friends";
 import Chat from "./pages/Chat";
 import Gallery from "./pages/Gallery";
 import Leaderboard from "./pages/Leaderboard";
-import AdminPic from "./pages/AdminPic";
+import Events from "./pages/Events";
 
 function AppContent() {
   const { updateEnergy, settings, globalBackgroundUrl, setGlobalBackgroundUrl, character, pageBackgrounds } = usePlayerStore();
@@ -102,6 +101,7 @@ function AppContent() {
     "Rubik Glitch": "font-rubik-glitch",
     "Neucha": "font-neucha",
     "Ruslan Display": "font-ruslan-display",
+    "Tektur": "font-tektur",
   };
 
   const fontClass = fontFamilyMap[settings.fontFamily] || "font-inter";
@@ -145,7 +145,7 @@ function AppContent() {
           <Route path="/friends" element={<Friends />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/admin/pic" element={<AdminPic />} />
+          <Route path="/events" element={<Events />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <BottomNav />

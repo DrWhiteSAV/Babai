@@ -14,9 +14,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const location = useLocation();
   const { character, fear, energy, watermelons, inventory, updateCharacter, gallery, addToGallery, settings, updateSettings, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
-  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
-  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
-  const profileRef = useRef<HTMLDivElement>(null);
+      const profileRef = useRef<HTMLDivElement>(null);
   const [isGeneratingLore, setIsGeneratingLore] = useState(false);
   const [infoModal, setInfoModal] = useState<CurrencyType>(null);
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -75,15 +73,9 @@ export default function Profile() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col bg-neutral-950/80 text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col bg-transparent text-neutral-200 relative overflow-hidden"
     >
-      {activeBgUrl && (
-        <div 
-          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
-          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
-        />
-      )}
-      <div className="fog-container">
+            <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
       </div>
@@ -94,27 +86,33 @@ export default function Profile() {
         onInfoClick={(type, e) => setInfoModal(type)}
         rightContent={
           <div className="flex gap-4">
-            <button
+            <div
+              role="button"
               onClick={() => updateSettings({ ttsEnabled: !settings.ttsEnabled })}
-              className={`p-2 rounded-full transition-colors ${settings.ttsEnabled ? 'text-green-500 hover:bg-neutral-800' : 'text-neutral-500 hover:bg-neutral-800'}`}
+              className={`p-2 rounded-full cursor-pointer transition-colors ${settings.ttsEnabled ? 'text-green-500 hover:bg-neutral-800' : 'text-neutral-500 hover:bg-neutral-800'}`}
               title={settings.ttsEnabled ? "Озвучка включена" : "Озвучка выключена"}
+              style={{ clipPath: 'none' }}
             >
               {settings.ttsEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
-            </button>
-            <button
+            </div>
+            <div
+              role="button"
               onClick={() => navigate("/gallery")}
-              className="p-2 hover:bg-neutral-800 rounded-full transition-colors text-neutral-400"
+              className="p-2 cursor-pointer hover:bg-neutral-800 rounded-full transition-colors text-neutral-400"
               title="Галерея"
+              style={{ clipPath: 'none' }}
             >
               <ImageIcon size={20} />
-            </button>
-            <button
+            </div>
+            <div
+              role="button"
               onClick={takeScreenshot}
-              className="p-2 hover:bg-neutral-800 rounded-full transition-colors text-red-500"
+              className="p-2 cursor-pointer hover:bg-neutral-800 rounded-full transition-colors text-red-500"
               title="Сделать скриншот"
+              style={{ clipPath: 'none' }}
             >
               <Camera size={20} />
-            </button>
+            </div>
           </div>
         }
       />
@@ -282,7 +280,7 @@ export default function Profile() {
           <div className="flex items-center gap-2">
             <div className="flex-1 bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-3 text-sm text-neutral-500 truncate">
               bab-ai.ru/invite/
-              {character.name.replace(/\s+/g, "").toLowerCase()}
+              {transliterate(character.name).replace(/\s+/g, "").toLowerCase()}
             </div>
             <button
               onClick={handleCopyRef}

@@ -25,7 +25,8 @@ export type FontFamily =
   | "Rubik Burned"
   | "Rubik Glitch"
   | "Neucha"
-  | "Ruslan Display";
+  | "Ruslan Display"
+  | "Tektur";
 export type Theme = "normal" | "cyberpunk";
 
 export interface Character {
@@ -103,6 +104,7 @@ export interface PlayerState {
   addFriend: (name: string) => void;
   toggleFriendAi: (name: string) => void;
   createGroupChat: (name: string, members: string[]) => void;
+  updateGroupMembers: (id: string, members: string[]) => void;
   completeQuest: (id: string) => void;
   updateQuestProgress: (id: string, amount: number) => void;
 }
@@ -198,7 +200,14 @@ export const usePlayerStore = create<PlayerState>()(
         }
       },
       updateSettings: (newSettings) =>
-        set((state) => ({ settings: { ...state.settings, ...newSettings } })),
+        set((state) => {
+          const updated = { ...state.settings, ...newSettings };
+          // If theme changed to cyberpunk, force font to Tektur
+          if (newSettings.theme === "cyberpunk" && state.settings.theme !== "cyberpunk") {
+            updated.fontFamily = "Tektur";
+          }
+          return { settings: updated };
+        }),
       setGlobalBackgroundUrl: (url) => set({ globalBackgroundUrl: url }),
       setPageBackground: (page, url, dimming) => set((state) => ({
         pageBackgrounds: {
@@ -278,7 +287,17 @@ export const usePlayerStore = create<PlayerState>()(
       },
       createGroupChat: (name, members) => {
         const { groupChats } = get();
-        set({ groupChats: [...groupChats, { id: Date.now().toString(), name, members }] });
+        // Ensure DanIIL is always in group chats
+        const finalMembers = members.includes("ДанИИл") ? members : [...members, "ДанИИл"];
+        set({ groupChats: [...groupChats, { id: Date.now().toString(), name, members: finalMembers }] });
+      },
+      updateGroupMembers: (id, members) => {
+        const { groupChats } = get();
+        // Ensure DanIIL is always in group chats
+        const finalMembers = members.includes("ДанИИл") ? members : [...members, "ДанИИл"];
+        set({
+          groupChats: groupChats.map(g => g.id === id ? { ...g, members: finalMembers } : g)
+        });
       },
       completeQuest: (id) => {
         const { quests, addFear, addEnergy, addWatermelons, addAchievement } = get();

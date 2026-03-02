@@ -11,9 +11,7 @@ export default function Gallery() {
   const navigate = useNavigate();
   const location = useLocation();
   const { gallery, settings, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
-  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
-  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
-  const { playClick } = useAudio(settings.musicVolume);
+      const { playClick } = useAudio(settings.musicVolume);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   return (
@@ -21,15 +19,9 @@ export default function Gallery() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="flex-1 flex flex-col bg-neutral-950/80 text-neutral-200 relative overflow-hidden h-screen"
+      className="flex-1 flex flex-col bg-transparent text-neutral-200 relative overflow-hidden h-screen"
     >
-      {activeBgUrl && (
-        <div 
-          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
-          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
-        />
-      )}
-      <div className="fog-container">
+            <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
       </div>

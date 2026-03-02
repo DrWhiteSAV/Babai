@@ -35,9 +35,7 @@ export default function Game() {
   const location = useLocation();
   const { character, fear, energy, useEnergy, addFear, settings, gallery, addToGallery, addWatermelons, inventory, watermelons, lastEnergyUpdate, bossLevel, globalBackgroundUrl, pageBackgrounds } =
     usePlayerStore();
-  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
-  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
-
+    
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [stage, setStage] = useState(1);
   const [maxStages, setMaxStages] = useState(15);
@@ -527,14 +525,8 @@ export default function Game() {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-neutral-950/80 text-white relative">
-      {activeBgUrl && (
-        <div 
-          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
-          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
-        />
-      )}
-      <AnimatePresence>
+    <div className="flex-1 flex flex-col bg-transparent text-white relative">
+            <AnimatePresence>
         {showScreamer && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}

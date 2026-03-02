@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=JetBrains+Mono:wght@400;700&family=Press+Start+2P&family=Roboto:wght@400;500;700&family=Montserrat:wght@400;500;700&family=Russo+One&family=Rubik+Beastly&family=Rubik+Burned&family=Rubik+Glitch&family=Neucha&family=Ruslan+Display&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=JetBrains+Mono:wght@400;700&family=Press+Start+2P&family=Roboto:wght@400;500;700&family=Montserrat:wght@400;500;700&family=Russo+One&family=Rubik+Beastly&family=Rubik+Burned&family=Rubik+Glitch&family=Neucha&family=Ruslan+Display&family=Tektur:wght@400;700;900&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -14,6 +14,7 @@
   --font-rubik-glitch: "Rubik Glitch", cursive;
   --font-neucha: "Neucha", cursive;
   --font-ruslan-display: "Ruslan Display", cursive;
+  --font-tektur: "Tektur", sans-serif;
 
   --animate-fog: fog 60s linear infinite;
   --animate-lightning: lightning 7s infinite;

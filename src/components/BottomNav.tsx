@@ -32,18 +32,21 @@ export default function BottomNav() {
       initial={{ y: 100 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="md:hidden fixed bottom-0 left-0 right-0 bg-neutral-900/90 backdrop-blur-lg border-t border-neutral-800 z-50 pb-safe"
+      className="md:hidden fixed bottom-0 left-0 right-0 bg-black/20 backdrop-blur-2xl border-t border-white/10 z-50 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.3)]"
+      style={{ fontSize: '16px' }} // Fixed font size
     >
       <div className="flex justify-around items-center p-2">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
-            <button
+            <div
+              role="button"
               key={item.path}
               onClick={() => navigate(item.path)}
-              className={`relative flex flex-col items-center justify-center w-16 h-14 transition-colors ${
+              className={`cursor-pointer relative flex flex-col items-center justify-center w-16 h-14 transition-colors ${
                 isActive ? "text-white" : "text-neutral-500 hover:text-neutral-300"
               }`}
+              style={{ clipPath: 'none', padding: 0, borderRadius: '0.5rem' }}
             >
               <motion.div
                 animate={{ 
@@ -64,7 +67,7 @@ export default function BottomNav() {
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 />
               )}
-            </button>
+            </div>
           );
         })}
       </div>

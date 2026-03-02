@@ -5,17 +5,17 @@ import { motion } from "motion/react";
 import { ArrowLeft, Users, UserPlus, Zap, MessageSquare, Link, Copy, Plus, X } from "lucide-react";
 import Header from "../components/Header";
 import { transliterate } from "../utils/transliterate";
+import ProfilePopup from "../components/ProfilePopup";
 
 export default function Friends() {
   const navigate = useNavigate();
   const location = useLocation();
   const { character, friends, groupChats, addFriend, toggleFriendAi, addEnergy, addFear, createGroupChat, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
-  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
-  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
-  const [newFriendName, setNewFriendName] = useState("");
+      const [newFriendName, setNewFriendName] = useState("");
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
+  const [showProfilePopup, setShowProfilePopup] = useState<string | null>(null);
 
   if (!character) {
     navigate("/");
@@ -66,20 +66,19 @@ export default function Friends() {
     );
   };
 
+  const getAvatarUrl = (name: string) => {
+    if (name === "ДанИИл") return "https://picsum.photos/seed/danil/100/100";
+    return `https://picsum.photos/seed/${name}/100/100`;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col bg-neutral-950/80 text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col bg-transparent text-neutral-200 relative overflow-hidden"
     >
-      {activeBgUrl && (
-        <div 
-          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
-          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
-        />
-      )}
-      <div className="fog-container">
+            <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
       </div>
@@ -169,7 +168,13 @@ export default function Friends() {
               {friends.map((friend) => (
                 <div key={friend.name} className="bg-neutral-900/80 backdrop-blur-md p-4 rounded-xl border border-neutral-800 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-white">{friend.name}</span>
+                    <div 
+                      className="flex items-center gap-3 cursor-pointer"
+                      onClick={() => setShowProfilePopup(friend.name)}
+                    >
+                      <img src={getAvatarUrl(friend.name)} alt="avatar" className="w-10 h-10 rounded-full object-cover border border-neutral-700" />
+                      <span className="font-bold text-white">{friend.name}</span>
+                    </div>
                     <div className="flex gap-2">
                       <button 
                         onClick={() => shareEnergy(friend.name)}
@@ -187,15 +192,17 @@ export default function Friends() {
                       </button>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between text-sm border-t border-neutral-800 pt-2">
-                    <span className="text-neutral-400">ИИ-заместитель в чате:</span>
-                    <button
-                      onClick={() => toggleFriendAi(friend.name)}
-                      className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${friend.isAiEnabled ? 'bg-green-900/50 text-green-400 border border-green-800' : 'bg-neutral-800 text-neutral-500 border border-neutral-700'}`}
-                    >
-                      {friend.isAiEnabled ? "ВКЛ" : "ВЫКЛ"}
-                    </button>
-                  </div>
+                  {friend.name !== "ДанИИл" && (
+                    <div className="flex items-center justify-between text-sm border-t border-neutral-800 pt-2">
+                      <span className="text-neutral-400">ИИ-заместитель в чате:</span>
+                      <button
+                        onClick={() => toggleFriendAi(friend.name)}
+                        className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${friend.isAiEnabled ? 'bg-green-900/50 text-green-400 border border-green-800' : 'bg-neutral-800 text-neutral-500 border border-neutral-700'}`}
+                      >
+                        {friend.isAiEnabled ? "ВКЛ" : "ВЫКЛ"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -228,7 +235,7 @@ export default function Friends() {
 
             <h3 className="text-sm font-bold text-neutral-400 mb-2">Выберите участников:</h3>
             <div className="max-h-48 overflow-y-auto space-y-2 mb-4 pr-2">
-              {friends.map(friend => (
+              {friends.filter(f => f.name !== "ДанИИл").map(friend => (
                 <label key={friend.name} className="flex items-center gap-3 p-2 bg-neutral-800/50 rounded-xl cursor-pointer hover:bg-neutral-800">
                   <input 
                     type="checkbox" 
@@ -250,6 +257,10 @@ export default function Friends() {
             </button>
           </motion.div>
         </div>
+      )}
+
+      {showProfilePopup && (
+        <ProfilePopup name={showProfilePopup} onClose={() => setShowProfilePopup(null)} />
       )}
     </motion.div>
   );

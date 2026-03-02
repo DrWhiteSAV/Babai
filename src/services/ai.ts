@@ -219,32 +219,3 @@ export async function generateDanilChat(
   }
 }
 
-export async function generateBackgroundImage(
-  stage: number,
-  style: string,
-): Promise<string> {
-  try {
-    const prompt = `Background image for a text RPG. A mysterious apartment building interior, floor ${stage}. Style: ${style}. Atmospheric, empty hallways or rooms. No characters.`;
-    const response = await withRetry(() => ai.models.generateContent({
-      model: "gemini-2.5-flash-image",
-      contents: { parts: [{ text: prompt }] },
-      config: {
-        imageConfig: {
-          aspectRatio: "16:9",
-        },
-      },
-    }));
-
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
-        const base64 = `data:image/png;base64,${part.inlineData.data}`;
-        return await compressImage(base64, 1024, 576);
-      }
-    }
-    return "https://picsum.photos/id/878/1920/1080";
-  } catch (e: any) {
-    console.warn("Image generation error or Rate limit, using fallback.");
-    return `https://picsum.photos/seed/floor${stage}/1920/1080`;
-  }
-}
-

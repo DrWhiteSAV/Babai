@@ -2,13 +2,16 @@ import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { usePlayerStore } from "../store/playerStore";
 import { motion } from "motion/react";
-import { ArrowLeft, MessageSquare, Send, ImagePlus, X } from "lucide-react";
+import { ArrowLeft, MessageSquare, Send, ImagePlus, X, Users, Settings, Reply } from "lucide-react";
 import { generateDanilChat } from "../services/ai";
+import ProfilePopup from "../components/ProfilePopup";
 
 interface Message {
+  id: string;
   sender: string;
   text: string;
   imageUrl?: string;
+  replyTo?: string; // ID of the message being replied to
 }
 
 import Header from "../components/Header";
@@ -16,9 +19,8 @@ import Header from "../components/Header";
 export default function Chat() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { character, friends, groupChats, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
-  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
-  const friendName = location.state?.friendName;
+  const { character, friends, groupChats, updateGroupMembers, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
+    const friendName = location.state?.friendName;
   const groupId = location.state?.groupId;
   const friend = friends.find(f => f.name === friendName);
   const group = groupChats.find(g => g.id === groupId);
@@ -28,8 +30,15 @@ export default function Chat() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [showProfilePopup, setShowProfilePopup] = useState<string | null>(null);
+  const [replyToMsg, setReplyToMsg] = useState<Message | null>(null);
+  const [showMembersModal, setShowMembersModal] = useState(false);
+  const [selectedFriends, setSelectedFriends] = useState<string[]>(group?.members || []);
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionFilter, setMentionFilter] = useState("");
+  
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!character || (!friendName && !groupId)) {
@@ -59,10 +68,14 @@ export default function Chat() {
 
     const userMessage = input.trim();
     const imageToSend = selectedImage;
+    const currentReplyTo = replyToMsg?.id;
     
-    setMessages((prev) => [...prev, { sender: "user", text: userMessage, imageUrl: imageToSend || undefined }]);
+    const newMsg: Message = { id: Date.now().toString(), sender: "user", text: userMessage, imageUrl: imageToSend || undefined, replyTo: currentReplyTo };
+    setMessages((prev) => [...prev, newMsg]);
     setInput("");
     setSelectedImage(null);
+    setReplyToMsg(null);
+    setShowMentions(false);
 
     if (friend?.isAiEnabled) {
       setIsAiTyping(true);
@@ -71,31 +84,74 @@ export default function Chat() {
         const responseText = await generateDanilChat(userMessage, character?.style || "Обычная", imageToSend || undefined);
         setMessages((prev) => [
           ...prev,
-          { sender: friend.name, text: responseText },
+          { id: Date.now().toString(), sender: friend.name, text: responseText, replyTo: newMsg.id },
         ]);
       } catch (e) {
         setMessages((prev) => [
           ...prev,
-          { sender: friend.name, text: "Связь прервалась. Попробуй позже." },
+          { id: Date.now().toString(), sender: friend.name, text: "Связь прервалась. Попробуй позже.", replyTo: newMsg.id },
         ]);
       } finally {
         setIsAiTyping(false);
       }
     } else if (group) {
-      // Group chat logic - simulate random friend responding if any are AI
+      // Group chat logic - simulate random friend responding if any are AI, or if mentioned
       const aiMembers = group.members.filter(m => friends.find(f => f.name === m)?.isAiEnabled);
-      if (aiMembers.length > 0) {
+      const mentionedAIs = aiMembers.filter(m => userMessage.includes(`@${m}`));
+      
+      const responders = mentionedAIs.length > 0 ? mentionedAIs : (aiMembers.length > 0 && Math.random() > 0.5 ? [aiMembers[Math.floor(Math.random() * aiMembers.length)]] : []);
+
+      if (responders.length > 0) {
         setIsAiTyping(true);
-        const randomAi = aiMembers[Math.floor(Math.random() * aiMembers.length)];
         setTimeout(() => {
-           setMessages((prev) => [
-            ...prev,
-            { sender: randomAi, text: `(ИИ) Я согласен с тобой, ${character?.name}!` },
-          ]);
+          const newResponses = responders.map((responder, idx) => ({
+            id: (Date.now() + idx).toString(),
+            sender: responder,
+            text: `(ИИ) ${mentionedAIs.includes(responder) ? 'Вы звали меня?' : 'Я согласен с тобой!'}`,
+            replyTo: newMsg.id
+          }));
+          setMessages((prev) => [...prev, ...newResponses]);
           setIsAiTyping(false);
         }, 1500);
       }
     }
+  };
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setInput(val);
+
+    if (group) {
+      const lastWord = val.split(" ").pop();
+      if (lastWord?.startsWith("@")) {
+        setShowMentions(true);
+        setMentionFilter(lastWord.slice(1).toLowerCase());
+      } else {
+        setShowMentions(false);
+      }
+    }
+  };
+
+  const insertMention = (name: string) => {
+    const words = input.split(" ");
+    words.pop();
+    setInput([...words, `@${name} `].join(" ").trimStart());
+    setShowMentions(false);
+    inputRef.current?.focus();
+  };
+
+  const handleUpdateMembers = () => {
+    if (group) {
+      updateGroupMembers(group.id, selectedFriends);
+      setShowMembersModal(false);
+    }
+  };
+
+  const toggleFriendSelection = (name: string) => {
+    if (name === "ДанИИл") return; // Cannot remove DanIIL
+    setSelectedFriends(prev => 
+      prev.includes(name) ? prev.filter(f => f !== name) : [...prev, name]
+    );
   };
 
   const getAvatarUrl = (sender: string) => {
@@ -113,7 +169,7 @@ export default function Chat() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col bg-neutral-950/80 text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col bg-transparent text-neutral-200 relative overflow-hidden"
     >
       {activeBgUrl && (
         <div 
@@ -127,7 +183,17 @@ export default function Chat() {
       </div>
 
       <Header 
-        title={<><MessageSquare size={20} /> Чат: {chatTitle}</>}
+        title={
+          <div className="flex items-center gap-2">
+            <MessageSquare size={20} /> 
+            <span className="truncate max-w-[150px]">{chatTitle}</span>
+            {group && (
+              <button onClick={() => setShowMembersModal(true)} className="ml-2 p-1 bg-neutral-800 rounded-lg hover:bg-neutral-700 text-neutral-400">
+                <Users size={16} />
+              </button>
+            )}
+          </div>
+        }
         backUrl="/friends"
       />
 
@@ -137,9 +203,11 @@ export default function Chat() {
         )}
         {messages.map((msg, i) => {
           const isUser = msg.sender === "user";
+          const repliedMsg = msg.replyTo ? messages.find(m => m.id === msg.replyTo) : null;
+          
           return (
             <div
-              key={i}
+              key={msg.id}
               className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
             >
               <div 
@@ -154,13 +222,40 @@ export default function Chat() {
                   <img src={getAvatarUrl(msg.sender)} alt="avatar" className="w-6 h-6 rounded-full object-cover border border-neutral-700" />
                 )}
               </div>
-              <div
-                className={`max-w-[80%] p-3 rounded-2xl ${isUser ? "bg-red-900 text-white rounded-tr-sm" : "bg-neutral-800 text-neutral-200 rounded-tl-sm"}`}
-              >
-                {msg.imageUrl && (
-                  <img src={msg.imageUrl} alt="attachment" className="w-full max-w-[200px] rounded-lg mb-2 object-contain" />
+              <div className="flex items-end gap-2 group/msg">
+                {isUser && group && (
+                  <button onClick={() => setReplyToMsg(msg)} className="opacity-0 group-hover/msg:opacity-100 p-1 text-neutral-500 hover:text-white transition-opacity">
+                    <Reply size={14} />
+                  </button>
                 )}
-                {msg.text && <p className="text-sm">{msg.text}</p>}
+                <div
+                  className={`max-w-[80%] p-3 rounded-2xl ${isUser ? "bg-red-900 text-white rounded-tr-sm" : "bg-neutral-800 text-neutral-200 rounded-tl-sm"}`}
+                >
+                  {repliedMsg && (
+                    <div className="mb-2 p-2 bg-black/20 rounded-lg border-l-2 border-white/30 text-xs text-neutral-300">
+                      <span className="font-bold opacity-70 block mb-1">{repliedMsg.sender === "user" ? character?.name : repliedMsg.sender}</span>
+                      <span className="line-clamp-1">{repliedMsg.text || "Фото"}</span>
+                    </div>
+                  )}
+                  {msg.imageUrl && (
+                    <img src={msg.imageUrl} alt="attachment" className="w-full max-w-[200px] rounded-lg mb-2 object-contain" />
+                  )}
+                  {msg.text && (
+                    <p className="text-sm">
+                      {msg.text.split(' ').map((word, idx) => {
+                        if (word.startsWith('@')) {
+                          return <span key={idx} className="text-blue-400 font-bold">{word} </span>;
+                        }
+                        return word + ' ';
+                      })}
+                    </p>
+                  )}
+                </div>
+                {!isUser && group && (
+                  <button onClick={() => setReplyToMsg(msg)} className="opacity-0 group-hover/msg:opacity-100 p-1 text-neutral-500 hover:text-white transition-opacity">
+                    <Reply size={14} />
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -178,6 +273,17 @@ export default function Chat() {
       </div>
 
       <div className="p-4 bg-neutral-900 border-t border-neutral-800 relative z-20">
+        {replyToMsg && (
+          <div className="mb-2 flex items-center justify-between bg-neutral-800 p-2 rounded-lg border-l-2 border-red-500">
+            <div className="flex-1 min-w-0">
+              <span className="text-xs text-red-400 font-bold block">Ответ {replyToMsg.sender === "user" ? character?.name : replyToMsg.sender}</span>
+              <span className="text-sm text-neutral-300 truncate block">{replyToMsg.text || "Фото"}</span>
+            </div>
+            <button onClick={() => setReplyToMsg(null)} className="text-neutral-500 hover:text-white p-1">
+              <X size={16} />
+            </button>
+          </div>
+        )}
         {selectedImage && (
           <div className="mb-2 relative inline-block">
             <img src={selectedImage} alt="preview" className="h-20 rounded-lg border border-neutral-700" />
@@ -187,6 +293,22 @@ export default function Chat() {
             >
               <X size={14} />
             </button>
+          </div>
+        )}
+        {showMentions && group && (
+          <div className="absolute bottom-full left-4 right-4 mb-2 bg-neutral-800 border border-neutral-700 rounded-xl overflow-hidden shadow-xl max-h-40 overflow-y-auto">
+            {group.members
+              .filter(m => m.toLowerCase().includes(mentionFilter))
+              .map(m => (
+                <button
+                  key={m}
+                  onClick={() => insertMention(m)}
+                  className="w-full text-left px-4 py-2 hover:bg-neutral-700 text-white text-sm flex items-center gap-2"
+                >
+                  <img src={getAvatarUrl(m)} alt="" className="w-6 h-6 rounded-full" />
+                  {m}
+                </button>
+              ))}
           </div>
         )}
         <div className="flex gap-2 items-end">
@@ -204,9 +326,10 @@ export default function Chat() {
             <ImagePlus size={20} className="text-neutral-400" />
           </button>
           <input
+            ref={inputRef}
             type="text"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Сообщение..."
             className="flex-1 bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-red-900 transition-colors"
@@ -221,55 +344,50 @@ export default function Chat() {
         </div>
       </div>
 
-      {/* Profile Popup */}
-      {showProfilePopup && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setShowProfilePopup(null)}>
+      {showMembersModal && group && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 max-w-sm w-full"
-            onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-bold text-white uppercase tracking-wider">Профиль</h2>
-              <button onClick={() => setShowProfilePopup(null)} className="text-neutral-500 hover:text-white">
+              <h2 className="text-xl font-bold text-white uppercase tracking-wider">Участники</h2>
+              <button onClick={() => setShowMembersModal(false)} className="text-neutral-500 hover:text-white">
                 <X size={24} />
               </button>
             </div>
             
-            {showProfilePopup === "user" ? (
-              <div className="space-y-4">
-                <img src={character?.avatarUrl} alt="avatar" className="w-full aspect-square object-cover rounded-xl border-2 border-red-900/50" />
-                <div>
-                  <h3 className="text-2xl font-black text-red-500 uppercase">{character?.name}</h3>
-                  <p className="text-neutral-400">{character?.gender} • {character?.style}</p>
-                </div>
-                <div className="bg-neutral-950 p-3 rounded-xl border border-neutral-800">
-                  <p className="text-sm text-neutral-300 line-clamp-4">{character?.lore || "История умалчивает..."}</p>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-neutral-400">Уровень телекинеза:</span>
-                  <span className="text-red-400 font-bold">{character?.telekinesisLevel}</span>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <img src={getAvatarUrl(showProfilePopup)} alt="avatar" className="w-full aspect-square object-cover rounded-xl border-2 border-neutral-700" />
-                <div>
-                  <h3 className="text-2xl font-black text-white uppercase">{showProfilePopup}</h3>
-                  <p className="text-neutral-400">{friends.find(f => f.name === showProfilePopup)?.isAiEnabled ? "ИИ-Заместитель" : "Живой игрок"}</p>
-                </div>
-                <div className="bg-neutral-950 p-3 rounded-xl border border-neutral-800">
-                  <p className="text-sm text-neutral-300">
-                    {showProfilePopup === "ДанИИл" 
-                      ? "Главный ИИ-начальник. Строг, но справедлив. Требует регулярных отчетов о выселении." 
-                      : "Один из бабаев, работающих в соседнем районе."}
-                  </p>
-                </div>
-              </div>
-            )}
+            <div className="max-h-60 overflow-y-auto space-y-2 mb-4 pr-2">
+              {friends.map(friend => (
+                <label key={friend.name} className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-colors ${friend.name === "ДанИИл" ? 'bg-neutral-800/30 opacity-70' : 'bg-neutral-800/50 hover:bg-neutral-800'}`}>
+                  <input 
+                    type="checkbox" 
+                    checked={selectedFriends.includes(friend.name) || friend.name === "ДанИИл"}
+                    onChange={() => toggleFriendSelection(friend.name)}
+                    disabled={friend.name === "ДанИИл"}
+                    className="accent-red-600 w-4 h-4"
+                  />
+                  <img src={getAvatarUrl(friend.name)} alt="" className="w-8 h-8 rounded-full object-cover" />
+                  <span className="text-white">{friend.name}</span>
+                  {friend.name === "ДанИИл" && <span className="ml-auto text-xs text-neutral-500">ИИ</span>}
+                </label>
+              ))}
+            </div>
+
+            <button
+              onClick={handleUpdateMembers}
+              className="w-full py-3 bg-red-700 hover:bg-red-600 text-white rounded-xl font-bold transition-colors"
+            >
+              Сохранить
+            </button>
           </motion.div>
         </div>
+      )}
+
+      {/* Profile Popup */}
+      {showProfilePopup && (
+        <ProfilePopup name={showProfilePopup} onClose={() => setShowProfilePopup(null)} />
       )}
     </motion.div>
   );

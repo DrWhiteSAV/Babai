@@ -32,9 +32,7 @@ export default function CharacterCreate() {
   const navigate = useNavigate();
   const location = useLocation();
   const { setCharacter, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
-  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
-  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
-
+    
   const [gender, setGender] = useState<Gender | null>(null);
   const [style, setStyle] = useState<Style | null>(null);
   const [wishes, setWishes] = useState<string[]>([]);
@@ -81,15 +79,9 @@ export default function CharacterCreate() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col p-6 bg-neutral-950/80 text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col p-6 bg-transparent text-neutral-200 relative overflow-hidden"
     >
-      {activeBgUrl && (
-        <div 
-          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
-          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
-        />
-      )}
-      <div className="fog-container">
+            <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
       </div>
@@ -98,7 +90,7 @@ export default function CharacterCreate() {
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-neutral-950/90 backdrop-blur-sm"
+          className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-transparent backdrop-blur-sm"
         >
           <motion.img 
             animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}

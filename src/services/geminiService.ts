@@ -138,37 +138,3 @@ export const editAvatarWithItem = async (currentAvatar: string, character: any, 
   }
   return currentAvatar;
 };
-
-export const generateGlobalBackground = async (
-  interiorStyle: string,
-  babaStyle: string,
-  interfaceTheme: string,
-) => {
-  try {
-    const prompt = `Фон для текстовой RPG игры про кибер-славянского бабая. Фон должен соответствовать текущему стилю: ${interiorStyle}, стилю Бабы: ${babaStyle}, теме интерфейса: ${interfaceTheme} и общей теме игры (мрачный кибер-славянский хоррор). Атмосферные пустые коридоры или комнаты, без персонажей. Высокое качество, детализация, кинематографичное освещение.`;
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-image",
-      contents: { parts: [{ text: prompt }] },
-      config: {
-        imageConfig: {
-          aspectRatio: "16:9",
-        },
-      },
-    });
-
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
-        const base64 = `data:image/png;base64,${part.inlineData.data}`;
-        return await compressImage(base64, 1024, 576);
-      }
-    }
-    return "https://fastly.picsum.photos/id/190/1920/1080";
-  } catch (e: any) {
-    if (e?.status === 429 || e?.message?.includes("429") || e?.message?.includes("quota")) {
-      console.warn("Global background Rate limit exceeded.");
-    } else {
-      console.error("Global background generation failed", e);
-    }
-    return "https://fastly.picsum.photos/id/190/1920/1080";
-  }
-};
