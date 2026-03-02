@@ -17,7 +17,9 @@ export default function Settings() {
   const navigate = useNavigate();
   const location = useLocation();
   const { settings, updateSettings, character, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
-    
+  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
+  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
+
   if (!character) {
     navigate("/");
     return null;
@@ -48,9 +50,15 @@ export default function Settings() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col bg-transparent text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col bg-neutral-950/80 text-neutral-200 relative overflow-hidden"
     >
-            <div className="fog-container">
+      {activeBgUrl && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
+          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
+        />
+      )}
+      <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
       </div>
@@ -146,6 +154,27 @@ export default function Settings() {
             <div className="flex justify-between text-xs text-neutral-500 mt-4 font-mono">
               <span>5px</span>
               <span>24px</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Font Brightness */}
+        <section>
+          <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2 flex items-center gap-2">
+            <Type size={18} /> Яркость шрифта: {settings.fontBrightness}%
+          </h2>
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={settings.fontBrightness}
+              onChange={(e) => updateSettings({ fontBrightness: parseInt(e.target.value, 10) })}
+              className="w-full accent-red-600 h-2 bg-neutral-800 rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-xs text-neutral-500 mt-4 font-mono">
+              <span>0%</span>
+              <span>100%</span>
             </div>
           </div>
         </section>

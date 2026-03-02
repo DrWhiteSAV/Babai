@@ -78,6 +78,7 @@ export interface PlayerState {
     buttonSize: ButtonSize;
     fontFamily: FontFamily;
     fontSize: number;
+    fontBrightness: number;
     theme: Theme;
     musicVolume: number;
     ttsEnabled: boolean;
@@ -142,6 +143,7 @@ export const usePlayerStore = create<PlayerState>()(
         buttonSize: "medium",
         fontFamily: "Inter",
         fontSize: 16,
+        fontBrightness: 100,
         theme: "normal",
         musicVolume: 50,
         ttsEnabled: false,

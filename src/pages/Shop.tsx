@@ -11,9 +11,9 @@ import { SHOP_ITEMS, BOSS_ITEMS } from "../data/items";
 export default function Shop() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { fear, watermelons, inventory, buyItem, upgradeTelekinesis, upgradeBossLevel, bossLevel, character, updateCharacter, addToGallery, globalBackgroundUrl, pageBackgrounds } =
+  const { fear, watermelons, inventory, buyItem, upgradeTelekinesis, upgradeBossLevel, bossLevel, character, updateCharacter, addToGallery, settings } =
     usePlayerStore();
-      const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [infoModal, setInfoModal] = useState<{type: CurrencyType, y: number} | null>(null);
   const [selectedItem, setSelectedItem] = useState<{item: any, y: number} | null>(null);
   const [warningModal, setWarningModal] = useState<{ item: any, deficit: number, y: number } | null>(null);
@@ -104,9 +104,9 @@ export default function Shop() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col bg-transparent text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col text-neutral-200 relative overflow-hidden"
     >
-            <div className="fog-container">
+      <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
       </div>
@@ -367,7 +367,7 @@ export default function Shop() {
               onClick={(e) => e.stopPropagation()}
               className="fixed bg-neutral-900 border border-neutral-800 rounded-3xl p-6 max-w-sm w-[90%] shadow-2xl"
               style={{ 
-                top: selectedItem.y ? Math.max(200, Math.min(selectedItem.y, window.innerHeight - 200)) : '50%', 
+                top: settings.theme === 'cyberpunk' ? '50%' : (selectedItem.y ? Math.max(200, Math.min(selectedItem.y, window.innerHeight - 200)) : '50%'), 
                 left: '50%' 
               }}
             >
@@ -436,7 +436,7 @@ export default function Shop() {
               onClick={(e) => e.stopPropagation()}
               className="fixed bg-neutral-900 border border-red-900/50 rounded-3xl p-6 max-w-sm w-[90%] shadow-[0_0_40px_rgba(220,38,38,0.2)]"
               style={{ 
-                top: warningModal.y ? Math.max(150, Math.min(warningModal.y, window.innerHeight - 150)) : '50%', 
+                top: settings.theme === 'cyberpunk' ? '50%' : (warningModal.y ? Math.max(150, Math.min(warningModal.y, window.innerHeight - 150)) : '50%'), 
                 left: '50%' 
               }}
             >

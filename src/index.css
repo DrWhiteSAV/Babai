@@ -64,7 +64,10 @@ body {
 }
 
 .theme-cyberpunk .bg-neutral-900,
+.theme-cyberpunk .bg-neutral-900\/80,
+.theme-cyberpunk .bg-neutral-900\/90,
 .theme-cyberpunk .bg-neutral-950,
+.theme-cyberpunk .bg-neutral-950\/80,
 .theme-cyberpunk .bg-neutral-800 {
   background-color: rgba(10, 10, 30, 0.8) !important;
   backdrop-filter: blur(4px);
