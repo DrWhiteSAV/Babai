@@ -116,7 +116,7 @@ export default function Settings() {
           </h2>
           <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4">
             <select
-              value={settings.fontFamily}
+              value={settings.fontFamily ?? "Inter"}
               onChange={handleFontFamilyChange}
               className="w-full bg-neutral-800 text-white border border-neutral-700 rounded-xl p-3 outline-none focus:border-red-500 transition-colors"
             >
@@ -147,7 +147,7 @@ export default function Settings() {
               type="range"
               min="5"
               max="24"
-              value={settings.fontSize}
+              value={settings.fontSize ?? 16}
               onChange={handleFontSizeChange}
               className="w-full accent-red-600 h-2 bg-neutral-800 rounded-lg appearance-none cursor-pointer"
             />
@@ -168,7 +168,7 @@ export default function Settings() {
               type="range"
               min="0"
               max="100"
-              value={settings.fontBrightness}
+              value={settings.fontBrightness ?? 100}
               onChange={(e) => updateSettings({ fontBrightness: parseInt(e.target.value, 10) })}
               className="w-full accent-red-600 h-2 bg-neutral-800 rounded-lg appearance-none cursor-pointer"
             />
@@ -202,7 +202,7 @@ export default function Settings() {
               type="range"
               min="0"
               max="100"
-              value={settings.musicVolume}
+              value={settings.musicVolume ?? 50}
               onChange={handleVolumeChange}
               className="w-full h-2 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-red-600"
             />
