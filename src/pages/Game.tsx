@@ -19,6 +19,7 @@ import {
   MessageSquare,
   X,
 } from "lucide-react";
+import { CutscenePlayer } from "../components/CutscenePlayer";
 
 type Difficulty = "Сложная" | "Невозможная" | "Бесконечная";
 
@@ -46,6 +47,7 @@ export default function Game() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [showScreamer, setShowScreamer] = useState(false);
   const [showSuccessAvatar, setShowSuccessAvatar] = useState(false);
+  const [showCutscene, setShowCutscene] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
@@ -140,6 +142,7 @@ export default function Game() {
     setPvpResults(null);
     setPvpParticipants([]);
     setIsGameOver(false);
+    setShowCutscene(true);
     await loadNextStage(1);
   };
 
@@ -163,6 +166,7 @@ export default function Game() {
 
     // Boss Battle check (stages 16 and 46)
     if (currentStage === 16 || currentStage === 46) {
+      setShowCutscene(true);
       setIsBossBattle(true);
       setBossTaps(0);
       setBossTimer(30 + getBossTimeBonus());
@@ -218,18 +222,24 @@ export default function Game() {
           // Check if we are still on this stage and not loading
           if (audioData && audioRef.current && !isLoading) {
             audioRef.current.src = audioData;
-            audioRef.current
-              .play()
-              .catch((e) => console.log("Audio play blocked", e));
+            const hasInteracted = (navigator as any).userActivation ? (navigator as any).userActivation.hasBeenActive : true;
+            if (hasInteracted) {
+              audioRef.current
+                .play()
+                .catch((e) => console.log("Audio play blocked", e));
+            }
           } else if (!audioData && !isLoading) {
             // Fallback to browser TTS if API fails
             if ('speechSynthesis' in window) {
-              window.speechSynthesis.cancel(); // Stop any previous speech
-              const utterance = new SpeechSynthesisUtterance(newScenario.text);
-              utterance.lang = 'ru-RU';
-              utterance.pitch = 0.5;
-              utterance.rate = 0.9;
-              window.speechSynthesis.speak(utterance);
+              const hasInteracted = (navigator as any).userActivation ? (navigator as any).userActivation.hasBeenActive : true;
+              if (hasInteracted) {
+                window.speechSynthesis.cancel(); // Stop any previous speech
+                const utterance = new SpeechSynthesisUtterance(newScenario.text);
+                utterance.lang = 'ru-RU';
+                utterance.pitch = 0.5;
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+              }
             }
           }
         });
@@ -363,6 +373,7 @@ export default function Game() {
     setPvpResults(null);
     setIsGameOver(false);
     setIsPvpLobby(false);
+    setShowCutscene(true);
     await loadNextStage(1);
   };
 
@@ -633,7 +644,8 @@ export default function Game() {
 
   return (
     <div className="flex-1 flex flex-col bg-transparent text-white relative">
-            <AnimatePresence>
+      {showCutscene && <CutscenePlayer onComplete={() => setShowCutscene(false)} />}
+      <AnimatePresence>
         {showScreamer && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}

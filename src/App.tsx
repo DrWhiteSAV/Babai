@@ -6,9 +6,10 @@ import {
   useLocation,
 } from "react-router-dom";
 import { usePlayerStore } from "./store/playerStore";
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAudio, menuMusic, bgMusics } from "./hooks/useAudio";
 import BottomNav from "./components/BottomNav";
+import { CutscenePlayer } from "./components/CutscenePlayer";
 
 // Pages
 import Home from "./pages/Home";
@@ -25,6 +26,7 @@ import Leaderboard from "./pages/Leaderboard";
 import Events from "./pages/Events";
 
 function AppContent() {
+  const [hasSeenInitialCutscene, setHasSeenInitialCutscene] = useState(false);
   const { updateEnergy, settings, globalBackgroundUrl, setGlobalBackgroundUrl, character, pageBackgrounds } = usePlayerStore();
   const { playClick } = useAudio(settings.musicVolume);
   const location = useLocation();
@@ -54,7 +56,10 @@ function AppContent() {
 
     if (normalizedCurrent !== normalizedTarget) {
       bgMusicRef.current.src = targetSrc;
-      bgMusicRef.current.play().catch(() => {});
+      const hasInteracted = (navigator as any).userActivation ? (navigator as any).userActivation.hasBeenActive : true;
+      if (hasInteracted) {
+        bgMusicRef.current.play().catch(() => {});
+      }
     }
 
     bgMusicRef.current.volume = (settings.musicVolume / 100) * 0.2;
@@ -130,6 +135,9 @@ function AppContent() {
         backgroundAttachment: 'fixed'
       } : {}}
     >
+      {!hasSeenInitialCutscene && (
+        <CutscenePlayer onComplete={() => setHasSeenInitialCutscene(true)} />
+      )}
       <style>{`
         * {
           -webkit-text-fill-color: color-mix(in srgb, currentColor ${settings.fontBrightness ?? 100}%, black) !important;

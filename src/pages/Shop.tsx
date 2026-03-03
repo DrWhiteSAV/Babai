@@ -20,6 +20,8 @@ export default function Shop() {
   const [successEffect, setSuccessEffect] = useState<string | null>(null);
 
   const playSuccessSound = () => {
+    const hasInteracted = (navigator as any).userActivation ? (navigator as any).userActivation.hasBeenActive : true;
+    if (!hasInteracted) return;
     const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
     audio.volume = 0.5;
     audio.play().catch(e => console.log("Audio play failed:", e));

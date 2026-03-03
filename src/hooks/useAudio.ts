@@ -68,18 +68,24 @@ export const useAudio = (volume: number) => {
   }, []);
 
   const playClick = useCallback(() => {
+    const hasInteracted = (navigator as any).userActivation ? (navigator as any).userActivation.hasBeenActive : true;
+    if (!hasInteracted) return;
     const click = new Audio('https://www.soundjay.com/buttons/button-16.mp3');
     click.volume = volume / 100;
     click.play().catch(() => {});
   }, [volume]);
 
   const playTransition = useCallback(() => {
+    const hasInteracted = (navigator as any).userActivation ? (navigator as any).userActivation.hasBeenActive : true;
+    if (!hasInteracted) return;
     const whoosh = new Audio('https://www.soundjay.com/free-music/whoosh-01.mp3');
     whoosh.volume = volume / 100;
     whoosh.play().catch(() => {});
   }, [volume]);
 
   const playSound = useCallback((type: 'scream' | 'cat' | 'fear') => {
+    const hasInteracted = (navigator as any).userActivation ? (navigator as any).userActivation.hasBeenActive : true;
+    if (!hasInteracted) return;
     if (specialAudioRef.current) {
       specialAudioRef.current.pause();
     }
