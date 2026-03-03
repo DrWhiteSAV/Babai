@@ -347,7 +347,7 @@ export default function Game() {
 
   if (isGameOver) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-6 bg-neutral-950 text-white text-center">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 text-white text-center relative z-10">
         <img 
           src="https://i.ibb.co/BVgY7XrT/babai.png" 
           alt="Bab-AI" 
@@ -375,7 +375,7 @@ export default function Game() {
 
   if (!difficulty) {
     return (
-      <div className="flex-1 flex flex-col p-6 bg-neutral-950 text-white">
+      <div className="flex-1 flex flex-col p-6 text-white relative z-10">
         <header className="flex justify-between items-center mb-8">
           <button
             onClick={() => navigate("/hub")}
@@ -446,7 +446,7 @@ export default function Game() {
             </p>
           </button>
           <button
-            onClick={() => setIsPvpLobby(true)}
+            onClick={() => navigate('/friends')}
             className="w-full p-6 bg-neutral-900 border border-neutral-800 rounded-2xl text-left hover:border-red-900 transition-colors group lightning-btn"
           >
             <h3 className="text-xl font-bold text-white group-hover:text-red-500 transition-colors">

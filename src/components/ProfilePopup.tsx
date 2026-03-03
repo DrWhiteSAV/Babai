@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { X } from "lucide-react";
 import { usePlayerStore } from "../store/playerStore";
+import { SHOP_ITEMS, BOSS_ITEMS } from "../data/items";
 
 interface ProfilePopupProps {
   name: string;
@@ -32,7 +33,7 @@ export default function ProfilePopup({ name, onClose }: ProfilePopupProps) {
       watermelons: isDanil ? 999 : (absHash % 100) + 10,
       telekinesisLevel: isDanil ? 99 : (absHash % 10) + 1,
       bossLevel: isDanil ? 99 : (absHash % 5) + 1,
-      inventory: isDanil ? ["Вселенский страх", "Абсолютная власть"] : (absHash % 2 === 0 ? ["Ржавая труба", "Старый фонарь"] : ["Бита", "Маска"]),
+      inventory: isDanil ? ["boss_1", "boss_2"] : (absHash % 2 === 0 ? ["shop_1", "shop_2"] : ["shop_3", "shop_4"]),
       lore: isDanil 
         ? "ДанИИл — Главный ИИ-начальник. Строг, но справедлив. Требует регулярных отчетов о выселении. Создан из чистого кода и первобытного страха. Контролирует все процессы в мире Бабаев."
         : `Один из бабаев, работающих в соседнем районе. Известен своими нестандартными методами запугивания.`
@@ -51,6 +52,9 @@ export default function ProfilePopup({ name, onClose }: ProfilePopupProps) {
     inventory,
     lore: character?.lore || "История умалчивает..."
   } : getMockData(name);
+
+  const allItems = [...SHOP_ITEMS, ...BOSS_ITEMS];
+  const userItems = data.inventory?.map(id => allItems.find(i => i.id === id || i.name === id)).filter(Boolean) || [];
 
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
@@ -104,12 +108,15 @@ export default function ProfilePopup({ name, onClose }: ProfilePopupProps) {
 
           <div className="bg-neutral-950 p-3 rounded-xl border border-neutral-800">
             <h4 className="text-xs font-bold text-neutral-500 uppercase mb-2">Инвентарь</h4>
-            {data.inventory && data.inventory.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {data.inventory.map((item, i) => (
-                  <span key={i} className="text-xs bg-neutral-800 px-2 py-1 rounded text-neutral-300">
-                    {item}
-                  </span>
+            {userItems.length > 0 ? (
+              <div className="grid grid-cols-3 gap-2">
+                {userItems.map((item: any, i: number) => (
+                  <div key={i} className="bg-neutral-900 border border-neutral-800 rounded-lg p-2 flex flex-col items-center text-center gap-1">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xl bg-neutral-800">
+                      {item.icon}
+                    </div>
+                    <span className="text-[10px] font-bold text-white line-clamp-1">{item.name}</span>
+                  </div>
                 ))}
               </div>
             ) : (

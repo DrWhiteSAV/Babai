@@ -122,7 +122,13 @@ function AppContent() {
 
   return (
     <div 
-      className={`min-h-screen bg-neutral-950 text-neutral-100 ${fontClass} ${themeClass} selection:bg-red-900 selection:text-white ${buttonSizeClass}`}
+      className={`min-h-[100dvh] bg-neutral-950 text-neutral-100 ${fontClass} ${themeClass} selection:bg-red-900 selection:text-white ${buttonSizeClass}`}
+      style={activeBgUrl ? {
+        backgroundImage: `linear-gradient(to bottom, rgba(23, 23, 23, ${dimmingTop}), rgba(23, 23, 23, ${dimmingBottom})), url(${activeBgUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      } : {}}
     >
       <style>{`
         * {
@@ -130,13 +136,7 @@ function AppContent() {
         }
       `}</style>
       <div 
-        className="w-full max-w-7xl mx-auto h-screen bg-[#171717] shadow-2xl relative overflow-hidden flex flex-col md:flex-row pb-16 md:pb-0"
-        style={activeBgUrl ? {
-          backgroundImage: `linear-gradient(to bottom, rgba(23, 23, 23, ${dimmingTop}), rgba(23, 23, 23, ${dimmingBottom})), url(${activeBgUrl})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
-        } : {}}
+        className="w-full max-w-7xl mx-auto h-[100dvh] shadow-2xl relative overflow-hidden flex flex-col md:flex-row pb-16 md:pb-0"
       >
         <Routes>
           <Route path="/" element={<Home />} />

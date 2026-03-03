@@ -24,6 +24,7 @@ export default function Chat() {
   const groupId = location.state?.groupId;
   const friend = friends.find(f => f.name === friendName);
   const group = groupChats.find(g => g.id === groupId);
+  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");

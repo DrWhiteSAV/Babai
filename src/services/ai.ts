@@ -8,8 +8,8 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 2, delay = 1000): Pr
   try {
     return await fn();
   } catch (e: any) {
-    const isQuotaError = e?.status === 429 || e?.message?.includes("429") || e?.message?.includes("quota");
-    if (isQuotaError && retries > 0) {
+    const isRetryableError = e?.status === 429 || e?.status === 500 || e?.status === 503 || e?.message?.includes("429") || e?.message?.includes("500") || e?.message?.includes("503") || e?.message?.includes("quota") || e?.message?.includes("Internal error");
+    if (isRetryableError && retries > 0) {
       await new Promise(resolve => setTimeout(resolve, delay));
       return withRetry(fn, retries - 1, delay * 2);
     }
@@ -147,12 +147,41 @@ export async function generateScenario(
   }
 }
 
+export async function generateBackgroundImage(
+  stage: number,
+  style: string,
+): Promise<string> {
+  try {
+    const prompt = `A beautiful, atmospheric background image for a video game. It shows an empty hallway or room in a futuristic apartment building. The style is ${style}. Stage ${stage}. No text, no people, just the environment, highly detailed.`;
+    const response = await withRetry(() => ai.models.generateContent({
+      model: "gemini-2.5-flash-image",
+      contents: { parts: [{ text: prompt }] },
+      config: {
+        imageConfig: {
+          aspectRatio: "16:9",
+        },
+      },
+    }));
+
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        const base64 = `data:image/png;base64,${part.inlineData.data}`;
+        return await compressImage(base64, 1280, 720);
+      }
+    }
+    return "https://picsum.photos/id/1015/1920/1080";
+  } catch (e) {
+    console.error("Background image gen error:", e);
+    return "https://picsum.photos/id/1015/1920/1080";
+  }
+}
+
 export async function generateBossImage(
   stage: number,
   style: string,
 ): Promise<string> {
   try {
-    const prompt = `A terrifying and massive boss monster for a Slavic cyber-horror game. It is a corrupted version of a building manager or a giant mechanical spider-like spirit. Style: ${style}. Epic, scary, detailed, high quality.`;
+    const prompt = `A massive boss character for a Slavic cyberpunk game. It is a corrupted version of a building manager or a giant mechanical spider-like spirit. Style: ${style}. Epic, detailed, high quality.`;
     const response = await withRetry(() => ai.models.generateContent({
       model: "gemini-2.5-flash-image",
       contents: { parts: [{ text: prompt }] },

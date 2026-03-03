@@ -116,6 +116,7 @@ export default function Settings() {
           </h2>
           <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4">
             <select
+              id="fontFamily"
               value={settings.fontFamily ?? "Inter"}
               onChange={handleFontFamilyChange}
               className="w-full bg-neutral-800 text-white border border-neutral-700 rounded-xl p-3 outline-none focus:border-red-500 transition-colors"
@@ -144,6 +145,7 @@ export default function Settings() {
           </h2>
           <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
             <input
+              id="fontSize"
               type="range"
               min="5"
               max="24"
@@ -165,6 +167,7 @@ export default function Settings() {
           </h2>
           <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
             <input
+              id="fontBrightness"
               type="range"
               min="0"
               max="100"
@@ -199,6 +202,7 @@ export default function Settings() {
           </h2>
           <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
             <input
+              id="musicVolume"
               type="range"
               min="0"
               max="100"

@@ -103,9 +103,12 @@ export interface PlayerState {
   upgradeBossLevel: (cost: number) => boolean;
   addAchievement: (id: string) => void;
   addFriend: (name: string) => void;
+  deleteFriend: (name: string) => void;
   toggleFriendAi: (name: string) => void;
   createGroupChat: (name: string, members: string[]) => void;
   updateGroupMembers: (id: string, members: string[]) => void;
+  updateGroupName: (id: string, name: string) => void;
+  deleteGroupChat: (id: string) => void;
   completeQuest: (id: string) => void;
   updateQuestProgress: (id: string, amount: number) => void;
 }
@@ -281,6 +284,10 @@ export const usePlayerStore = create<PlayerState>()(
           set({ friends: [...friends, { name, isAiEnabled: false }] });
         }
       },
+      deleteFriend: (name) => {
+        const { friends } = get();
+        set({ friends: friends.filter(f => f.name !== name) });
+      },
       toggleFriendAi: (name) => {
         const { friends } = get();
         set({
@@ -299,6 +306,18 @@ export const usePlayerStore = create<PlayerState>()(
         const finalMembers = members.includes("ДанИИл") ? members : [...members, "ДанИИл"];
         set({
           groupChats: groupChats.map(g => g.id === id ? { ...g, members: finalMembers } : g)
+        });
+      },
+      updateGroupName: (id, name) => {
+        const { groupChats } = get();
+        set({
+          groupChats: groupChats.map(g => g.id === id ? { ...g, name } : g)
+        });
+      },
+      deleteGroupChat: (id) => {
+        const { groupChats } = get();
+        set({
+          groupChats: groupChats.filter(g => g.id !== id)
         });
       },
       completeQuest: (id) => {

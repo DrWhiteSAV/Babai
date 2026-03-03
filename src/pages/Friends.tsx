@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { usePlayerStore } from "../store/playerStore";
 import { motion } from "motion/react";
-import { ArrowLeft, Users, UserPlus, Zap, MessageSquare, Link, Copy, Plus, X } from "lucide-react";
+import { ArrowLeft, Users, UserPlus, Zap, MessageSquare, Link, Copy, Plus, X, Trash2, Edit2 } from "lucide-react";
 import Header from "../components/Header";
 import { transliterate } from "../utils/transliterate";
 import ProfilePopup from "../components/ProfilePopup";
@@ -10,12 +10,14 @@ import ProfilePopup from "../components/ProfilePopup";
 export default function Friends() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { character, friends, groupChats, addFriend, toggleFriendAi, addEnergy, addFear, createGroupChat, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
-      const [newFriendName, setNewFriendName] = useState("");
+  const { character, friends, groupChats, addFriend, toggleFriendAi, addEnergy, addFear, createGroupChat, globalBackgroundUrl, pageBackgrounds, deleteFriend, deleteGroupChat, updateGroupName } = usePlayerStore();
+  const [newFriendName, setNewFriendName] = useState("");
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
   const [showProfilePopup, setShowProfilePopup] = useState<string | null>(null);
+  const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
+  const [editGroupName, setEditGroupName] = useState("");
 
   if (!character) {
     navigate("/");
@@ -57,6 +59,19 @@ export default function Friends() {
       setNewGroupName("");
       setSelectedFriends([]);
       setShowGroupModal(false);
+    }
+  };
+
+  const handleEditGroup = (id: string, currentName: string) => {
+    setEditingGroupId(id);
+    setEditGroupName(currentName);
+  };
+
+  const saveGroupName = () => {
+    if (editingGroupId && editGroupName.trim()) {
+      updateGroupName(editingGroupId, editGroupName.trim());
+      setEditingGroupId(null);
+      setEditGroupName("");
     }
   };
 
@@ -142,17 +157,49 @@ export default function Friends() {
             <div className="space-y-3">
               {groupChats.map((chat) => (
                 <div key={chat.id} className="bg-neutral-900/80 backdrop-blur-md p-4 rounded-xl border border-neutral-800 flex items-center justify-between">
-                  <div>
-                    <span className="font-bold text-white block">{chat.name}</span>
-                    <span className="text-xs text-neutral-500">{chat.members.length} участников</span>
+                  {editingGroupId === chat.id ? (
+                    <div className="flex-1 flex gap-2 mr-2">
+                      <input
+                        type="text"
+                        value={editGroupName}
+                        onChange={(e) => setEditGroupName(e.target.value)}
+                        className="flex-1 bg-neutral-950 border border-neutral-800 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-red-900 text-white"
+                        autoFocus
+                      />
+                      <button onClick={saveGroupName} className="text-green-500 text-sm font-bold">OK</button>
+                      <button onClick={() => setEditingGroupId(null)} className="text-neutral-500 text-sm">Отмена</button>
+                    </div>
+                  ) : (
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white block">{chat.name}</span>
+                        <button onClick={() => handleEditGroup(chat.id, chat.name)} className="text-neutral-500 hover:text-white">
+                          <Edit2 size={12} />
+                        </button>
+                      </div>
+                      <span className="text-xs text-neutral-500">{chat.members.length} участников</span>
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => navigate("/chat", { state: { groupId: chat.id } })}
+                      className="p-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-blue-400 transition-colors"
+                      title="Чат"
+                    >
+                      <MessageSquare size={16} />
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (confirm('Удалить группу?')) {
+                          deleteGroupChat(chat.id);
+                        }
+                      }}
+                      className="p-2 bg-neutral-800 hover:bg-red-900/50 rounded-lg text-red-500 transition-colors"
+                      title="Удалить"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => navigate("/chat", { state: { groupId: chat.id } })}
-                    className="p-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-blue-400 transition-colors"
-                    title="Чат"
-                  >
-                    <MessageSquare size={16} />
-                  </button>
                 </div>
               ))}
             </div>
@@ -190,6 +237,19 @@ export default function Friends() {
                       >
                         <MessageSquare size={16} />
                       </button>
+                      {friend.name !== "ДанИИл" && (
+                        <button 
+                          onClick={() => {
+                            if (confirm(`Удалить ${friend.name} из друзей?`)) {
+                              deleteFriend(friend.name);
+                            }
+                          }}
+                          className="p-2 bg-neutral-800 hover:bg-red-900/50 rounded-lg text-red-500 transition-colors"
+                          title="Удалить"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
                     </div>
                   </div>
                   {friend.name !== "ДанИИл" && (

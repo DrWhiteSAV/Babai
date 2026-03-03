@@ -54,40 +54,41 @@ export default function Header({ title, backUrl, onInfoClick, rightContent }: He
       )}
 
       <div className="flex flex-col items-center justify-center w-full">
-        {/* Row 1: Stats or Profile Icons */}
-        {rightContent ? (
-          <div className="flex justify-center w-full mb-2">
-            {rightContent}
+        {/* Row 1: Stats */}
+        <div className="flex items-center justify-center gap-4 mb-2">
+          <div 
+            className="flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={(e) => onInfoClick?.('energy', e)}
+          >
+            <div className="flex items-center gap-1 text-yellow-500 font-bold text-[16px]">
+              <Zap size={16} /> {energy}
+            </div>
+            <div className="text-[10px] text-yellow-500/70 font-bold -mt-1">
+              {formatTime(timeLeft)}
+            </div>
           </div>
-        ) : (
-          <div className="flex items-center justify-center gap-4 mb-2">
-            <div 
-              className="flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={(e) => onInfoClick?.('energy', e)}
-            >
-              <div className="flex items-center gap-1 text-yellow-500 font-bold text-[16px]">
-                <Zap size={16} /> {energy}
-              </div>
-              <div className="text-[10px] text-yellow-500/70 font-bold -mt-1">
-                {formatTime(timeLeft)}
-              </div>
-            </div>
-            <div 
-              className="flex items-center gap-1 text-red-500 font-bold cursor-pointer hover:opacity-80 transition-opacity text-[16px]"
-              onClick={(e) => onInfoClick?.('fear', e)}
-            >
-              <Skull size={16} /> {fear}
-            </div>
-            <div 
-              className="flex items-center gap-1 text-green-500 font-bold cursor-pointer hover:opacity-80 transition-opacity text-[16px]"
-              onClick={(e) => onInfoClick?.('watermelons', e)}
-            >
-              🍉 {watermelons}
-            </div>
+          <div 
+            className="flex items-center gap-1 text-red-500 font-bold cursor-pointer hover:opacity-80 transition-opacity text-[16px]"
+            onClick={(e) => onInfoClick?.('fear', e)}
+          >
+            <Skull size={16} /> {fear}
+          </div>
+          <div 
+            className="flex items-center gap-1 text-green-500 font-bold cursor-pointer hover:opacity-80 transition-opacity text-[16px]"
+            onClick={(e) => onInfoClick?.('watermelons', e)}
+          >
+            🍉 {watermelons}
+          </div>
+        </div>
+
+        {/* Row 2: Right Content (Profile/Settings) */}
+        {rightContent && (
+          <div className="flex justify-center w-full mb-2 gap-4">
+            {rightContent}
           </div>
         )}
 
-        {/* Row 2: Title */}
+        {/* Row 3: Title */}
         {title && (
           <h1 className="text-[20px] font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2">
             {title}

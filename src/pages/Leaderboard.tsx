@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { usePlayerStore } from "../store/playerStore";
 import { motion } from "motion/react";
-import { ArrowLeft, Trophy, Medal, Star, Target, CheckCircle2, ChevronRight } from "lucide-react";
+import { ArrowLeft, Trophy, Medal, Star, Target, CheckCircle2, ChevronRight, UserPlus } from "lucide-react";
 
 import Header from "../components/Header";
 import ProfilePopup from "../components/ProfilePopup";
@@ -10,7 +10,7 @@ import ProfilePopup from "../components/ProfilePopup";
 export default function Leaderboard() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { character, achievements, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
+  const { character, achievements, globalBackgroundUrl, pageBackgrounds, addFriend, friends } = usePlayerStore();
     
   const [showProfilePopup, setShowProfilePopup] = useState<string | null>(null);
 
@@ -22,6 +22,11 @@ export default function Leaderboard() {
     { rank: 4, name: character?.name || "Вы", score: 8500, avatar: character?.avatarUrl || "https://picsum.photos/seed/user/100/100", isUser: true },
     { rank: 5, name: "Скример", score: 7100, avatar: "https://picsum.photos/seed/b4/100/100" },
   ];
+
+  const handleAddFriend = (name: string) => {
+    addFriend(name);
+    alert(`Заявка в друзья отправлена ${name}!`);
+  };
 
   return (
     <motion.div
@@ -44,7 +49,9 @@ export default function Leaderboard() {
             <Medal size={20} className="text-yellow-500" /> Топ Бабаев
           </h2>
           <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
-            {leaderboard.map((user) => (
+            {leaderboard.map((user) => {
+              const isFriend = friends.some(f => f.name === user.name);
+              return (
               <div 
                 key={user.rank} 
                 className={`flex items-center gap-4 p-4 border-b border-neutral-800 last:border-0 ${user.isUser ? 'bg-red-900/20' : ''}`}
@@ -71,8 +78,17 @@ export default function Leaderboard() {
                   </h3>
                   <p className="text-sm text-neutral-500">{user.score} очков страха</p>
                 </div>
+                {!user.isUser && !isFriend && (
+                  <button
+                    onClick={() => handleAddFriend(user.name)}
+                    className="p-2 bg-neutral-800 hover:bg-neutral-700 rounded-full text-blue-400 transition-colors"
+                    title="Добавить в друзья"
+                  >
+                    <UserPlus size={18} />
+                  </button>
+                )}
               </div>
-            ))}
+            )})}
           </div>
         </section>
 
