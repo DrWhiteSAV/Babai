@@ -134,6 +134,11 @@ export default function Game() {
     );
     setStage(1);
     setScore(0);
+    setLocalFear(0);
+    setLocalWatermelons(0);
+    setExitedEarly(false);
+    setPvpResults(null);
+    setPvpParticipants([]);
     setIsGameOver(false);
     await loadNextStage(1);
   };
@@ -250,7 +255,11 @@ export default function Game() {
 
     if (isCorrect) {
       const fearReward = 1 + (character ? character.telekinesisLevel - 1 : 0);
-      addFear(fearReward);
+      if (pvpParticipants.length > 0) {
+        setLocalFear(f => f + fearReward);
+      } else {
+        addFear(fearReward);
+      }
       setScore((s) => s + 1);
       playSuccess(settings.musicVolume);
       setShowSuccessAvatar(true);
@@ -286,7 +295,11 @@ export default function Game() {
 
     if (newTaps >= maxHp) {
       setIsBossDefeated(true);
-      addWatermelons(reward);
+      if (pvpParticipants.length > 0) {
+        setLocalWatermelons(w => w + reward);
+      } else {
+        addWatermelons(reward);
+      }
       playSuccess(settings.musicVolume);
     }
   };
@@ -321,6 +334,10 @@ export default function Game() {
 
   const [isPvpLobby, setIsPvpLobby] = useState(false);
   const [pvpParticipants, setPvpParticipants] = useState<string[]>([]);
+  const [localFear, setLocalFear] = useState(0);
+  const [localWatermelons, setLocalWatermelons] = useState(0);
+  const [exitedEarly, setExitedEarly] = useState(false);
+  const [pvpResults, setPvpResults] = useState<{name: string, fear: number, watermelons: number, isLocal: boolean, exited?: boolean}[] | null>(null);
   const { friends } = usePlayerStore();
 
   const handleInviteFriend = (friendName: string) => {
@@ -340,12 +357,102 @@ export default function Game() {
     setMaxStages(diff === "Сложная" ? 15 : diff === "Невозможная" ? 45 : Infinity);
     setStage(1);
     setScore(0);
+    setLocalFear(0);
+    setLocalWatermelons(0);
+    setExitedEarly(false);
+    setPvpResults(null);
     setIsGameOver(false);
     setIsPvpLobby(false);
     await loadNextStage(1);
   };
 
+  useEffect(() => {
+    if (isGameOver && pvpParticipants.length > 0 && !pvpResults) {
+      const results = pvpParticipants.map(p => {
+        const successRate = 0.5 + Math.random() * 0.4;
+        const simulatedFear = Math.floor(maxStages * successRate);
+        const numBosses = Math.floor(maxStages / 15);
+        const simulatedWatermelons = numBosses > 0 ? Math.floor(Math.random() * 25 * numBosses) : 0;
+        return { name: p, fear: simulatedFear, watermelons: simulatedWatermelons, isLocal: false };
+      });
+      
+      results.push({ name: "Вы", fear: exitedEarly ? 0 : localFear, watermelons: exitedEarly ? 0 : localWatermelons, isLocal: true, exited: exitedEarly });
+      
+      results.sort((a, b) => b.fear - a.fear);
+      
+      setPvpResults(results);
+      
+      if (results[0].isLocal && !exitedEarly) {
+        const totalFear = results.reduce((sum, r) => sum + r.fear, 0);
+        const totalWatermelons = results.reduce((sum, r) => sum + r.watermelons, 0);
+        addFear(totalFear);
+        addWatermelons(totalWatermelons);
+      }
+    }
+  }, [isGameOver, pvpParticipants, pvpResults, localFear, localWatermelons, maxStages, exitedEarly, addFear, addWatermelons]);
+
   if (isGameOver) {
+    if (pvpParticipants.length > 0 && pvpResults) {
+      const isWinner = pvpResults[0].isLocal && !exitedEarly;
+      const totalFear = pvpResults.reduce((sum, r) => sum + r.fear, 0);
+      const totalWatermelons = pvpResults.reduce((sum, r) => sum + r.watermelons, 0);
+
+      return (
+        <div className="flex-1 flex flex-col p-6 text-white relative z-10 overflow-y-auto">
+          <header className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl font-black text-red-600 uppercase tracking-tighter">Итоги PVP</h1>
+          </header>
+          
+          <div className="flex-1 space-y-4">
+            {isWinner ? (
+              <div className="p-4 bg-green-900/50 border border-green-500 rounded-xl text-center mb-6">
+                <h2 className="text-xl font-bold text-green-400 mb-2">ВЫ ПОБЕДИЛИ!</h2>
+                <p className="text-sm text-green-200">Вы забираете весь банк:</p>
+                <div className="flex justify-center gap-4 mt-2 font-bold">
+                  <span className="text-red-400 flex items-center gap-1"><Skull size={16} /> {totalFear}</span>
+                  <span className="text-green-400 flex items-center gap-1">🍉 {totalWatermelons}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 bg-red-900/50 border border-red-500 rounded-xl text-center mb-6">
+                <h2 className="text-xl font-bold text-red-400 mb-2">ВЫ ПРОИГРАЛИ</h2>
+                <p className="text-sm text-red-200">
+                  {exitedEarly ? "Вы покинули игру и автоматически проиграли." : "Ваши достижения в этом забеге аннулированы."}
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              {pvpResults.map((res, idx) => (
+                <div key={res.name} className={`flex items-center justify-between p-3 rounded-xl border ${res.isLocal ? 'bg-neutral-800 border-neutral-600' : 'bg-neutral-900 border-neutral-800'}`}>
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-neutral-500 w-4">{idx + 1}.</span>
+                    <span className={`font-bold ${res.isLocal ? 'text-white' : 'text-neutral-300'}`}>
+                      {res.name} {res.exited && <span className="text-xs text-red-500 ml-2">(Сбежал)</span>}
+                    </span>
+                  </div>
+                  <div className="flex gap-3 text-sm font-bold">
+                    <span className="text-red-500 flex items-center gap-1"><Skull size={14} /> {res.fear}</span>
+                    <span className="text-green-500 flex items-center gap-1">🍉 {res.watermelons}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              playClick(settings.musicVolume);
+              navigate("/hub");
+            }}
+            className="w-full mt-6 p-4 bg-red-700 hover:bg-red-600 rounded-xl font-bold text-lg transition-colors"
+          >
+            ВЕРНУТЬСЯ В ХАБ
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 text-white text-center relative z-10">
         <img 
@@ -373,7 +480,7 @@ export default function Game() {
     );
   }
 
-  if (!difficulty) {
+  if (!difficulty && !isPvpLobby) {
     return (
       <div className="flex-1 flex flex-col p-6 text-white relative z-10">
         <header className="flex justify-between items-center mb-8">
@@ -446,7 +553,7 @@ export default function Game() {
             </p>
           </button>
           <button
-            onClick={() => navigate('/friends')}
+            onClick={() => setIsPvpLobby(true)}
             className="w-full p-6 bg-neutral-900 border border-neutral-800 rounded-2xl text-left hover:border-red-900 transition-colors group lightning-btn"
           >
             <h3 className="text-xl font-bold text-white group-hover:text-red-500 transition-colors">
@@ -463,7 +570,7 @@ export default function Game() {
 
   if (isPvpLobby) {
     return (
-      <div className="flex-1 flex flex-col p-6 bg-neutral-950 text-white">
+      <div className="flex-1 flex flex-col p-6 bg-transparent text-white relative z-10">
         <header className="flex justify-between items-center mb-8">
           <button
             onClick={() => setIsPvpLobby(false)}
@@ -556,12 +663,14 @@ export default function Game() {
       <audio ref={audioRef} className="hidden" />
       {/* Background Image */}
       {bgImage && (
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-50 pointer-events-none transition-opacity duration-1000"
-          style={{ backgroundImage: `url(${bgImage})` }}
-        />
+        <div className="fixed inset-0 z-0 bg-neutral-950">
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-50 pointer-events-none transition-opacity duration-1000"
+            style={{ backgroundImage: `url(${bgImage})` }}
+          />
+        </div>
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/60 to-transparent pointer-events-none" />
+      <div className="fixed inset-0 z-0 bg-gradient-to-t from-neutral-950 via-neutral-950/60 to-transparent pointer-events-none" />
 
       <div className="fog-container">
         <div className="fog-layer"></div>
@@ -572,7 +681,14 @@ export default function Game() {
       <header className="relative z-10 flex justify-between items-center p-4 bg-neutral-950/50 backdrop-blur-sm border-b border-neutral-800">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate("/hub")}
+            onClick={() => {
+              if (pvpParticipants.length > 0) {
+                setExitedEarly(true);
+                setIsGameOver(true);
+              } else {
+                navigate("/hub");
+              }
+            }}
             className="p-2 bg-neutral-900/80 rounded-full hover:bg-neutral-800 transition-colors"
           >
             <X size={18} />
@@ -586,10 +702,10 @@ export default function Game() {
         </div>
         <div className="flex gap-3 font-bold text-sm">
           <span className="text-red-500 flex items-center gap-1">
-            <Skull size={14} /> {fear}
+            <Skull size={14} /> {pvpParticipants.length > 0 ? localFear : fear}
           </span>
           <span className="text-green-500 flex items-center gap-1">
-            🍉 {watermelons}
+            🍉 {pvpParticipants.length > 0 ? localWatermelons : watermelons}
           </span>
         </div>
       </header>
