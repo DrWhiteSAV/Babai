@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, SkipForward, Play } from 'lucide-react';
+import { SkipForward, Play } from 'lucide-react';
 
 const VERTICAL_VIDEOS = [
   "https://file.pro-talk.ru/tgf/GgMpJwQ9JCkYKglyGHQJA1MwGk8dSD8EADEtA1oKbAgTQmltKQJLGAUdNjsZIj8MBBshDW0RIHw0bH5UVGgvEAoqN2QqJTkmVVpuYlYEbAV1VAgQCjEWKxseGVMpKyRYNBcXUm4FNwJgOi4UAQ4SOS4tKzsGCyUuTwJgBHdVAGB-S3U.mp4",
@@ -79,9 +79,39 @@ export const CutscenePlayer: React.FC<CutscenePlayerProps> = ({ onComplete }) =>
   return (
     <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center">
       {isLoading && !needsInteraction && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-          <Loader2 className="w-12 h-12 text-red-600 animate-spin mb-4" />
-          <p className="text-white font-bold tracking-widest uppercase">Загрузка...</p>
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-neutral-950 overflow-hidden">
+          {/* Fog Background */}
+          <div 
+            className="absolute top-0 left-0 w-[200%] h-full opacity-30 animate-fog pointer-events-none"
+            style={{
+              backgroundImage: 'url("https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?q=80&w=2000&auto=format&fit=crop")',
+              backgroundSize: '50% 100%',
+              backgroundRepeat: 'repeat-x',
+              filter: 'grayscale(100%) contrast(150%) brightness(0.5)',
+            }}
+          />
+          
+          {/* Vignette */}
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.9)_100%)] z-10" />
+
+          {/* Content */}
+          <div className="relative z-20 flex flex-col items-center">
+            <img 
+              src="https://i.ibb.co/BVgY7XrT/babai.png" 
+              alt="Babai Logo" 
+              className="w-48 h-48 object-contain mb-8 drop-shadow-[0_0_25px_rgba(220,38,38,0.6)] animate-pulse"
+              referrerPolicy="no-referrer"
+            />
+            
+            <div className="relative w-16 h-16 mb-6">
+              <div className="absolute inset-0 border-4 border-red-900/30 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-red-600 rounded-full border-t-transparent animate-spin"></div>
+            </div>
+            
+            <p className="text-red-500 font-black tracking-[0.3em] uppercase text-sm drop-shadow-[0_0_10px_rgba(220,38,38,0.8)] animate-pulse">
+              Загрузка...
+            </p>
+          </div>
         </div>
       )}
 
