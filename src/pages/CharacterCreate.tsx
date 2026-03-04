@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { usePlayerStore, Gender, Style, DEFAULT_IMAGES } from "../store/playerStore";
+import { usePlayerStore, Gender, Style } from "../store/playerStore";
+import { DEFAULT_GALLERY_IMAGES } from "../config/defaultSettings";
 import { generateCharacterName, generateAvatar } from "../services/ai";
 import { motion } from "motion/react";
 import { Loader2, ArrowRight, UserPlus, Sparkles } from "lucide-react";
@@ -227,7 +228,7 @@ export default function CharacterCreate() {
                   <Sparkles size={24} className={selectedDefaultImage === null ? "text-red-400" : "text-neutral-500"} />
                   <span className={`text-xs mt-2 font-bold ${selectedDefaultImage === null ? "text-red-400" : "text-neutral-500"}`}>ИИ Генерация</span>
                 </div>
-                {DEFAULT_IMAGES.map((img, idx) => (
+                {DEFAULT_GALLERY_IMAGES.map((img, idx) => (
                   <div 
                     key={idx}
                     onClick={() => setSelectedDefaultImage(img)}

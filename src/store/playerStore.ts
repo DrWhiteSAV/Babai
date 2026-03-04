@@ -1,6 +1,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { SHOP_ITEMS as DEFAULT_SHOP_ITEMS, BOSS_ITEMS as DEFAULT_BOSS_ITEMS } from "../data/items";
+import {
+  DEFAULT_STORE_CONFIG,
+  DEFAULT_GALLERY_IMAGES,
+  DEFAULT_VERTICAL_VIDEOS,
+  DEFAULT_HORIZONTAL_VIDEOS,
+  DEFAULT_SHOP_ITEMS,
+  DEFAULT_BOSS_ITEMS,
+  DEFAULT_PAGE_BACKGROUNDS,
+  DEFAULT_GLOBAL_BACKGROUND
+} from "../config/defaultSettings";
 
 export type Gender = "Бабай" | "Бабайка";
 export type Style =
@@ -83,16 +92,6 @@ export interface StoreConfig {
   energyRegenMinutes: number;
 }
 
-export const DEFAULT_VERTICAL_VIDEOS = [
-  "https://cdn.pixabay.com/video/2020/05/25/40130-424823521_large.mp4",
-  "https://cdn.pixabay.com/video/2023/10/22/186008-876824401_large.mp4"
-];
-
-export const DEFAULT_HORIZONTAL_VIDEOS = [
-  "https://cdn.pixabay.com/video/2022/11/01/137394-766524330_large.mp4",
-  "https://cdn.pixabay.com/video/2021/08/11/84687-587842605_large.mp4"
-];
-
 export interface PlayerState {
   character: Character | null;
   fear: number;
@@ -156,24 +155,6 @@ export interface PlayerState {
   updateBossItem: (id: string, updates: Partial<ShopItem>) => void;
 }
 
-export const DEFAULT_STORE_CONFIG: StoreConfig = {
-  telekinesisBaseCost: 50,
-  telekinesisCostMultiplier: 2,
-  telekinesisRewardBonus: 1,
-  bossBaseCost: 500,
-  bossCostMultiplier: 5,
-  bossRewardBase: 25,
-  bossRewardMultiplier: 2,
-  energyRegenMinutes: 5,
-};
-
-export const DEFAULT_IMAGES = [
-  "https://images.unsplash.com/photo-1505635552518-3448ff116af3?q=80&w=1080&auto=format&fit=crop",
-  "https://i.ibb.co/BVgY7XrT/babai.png",
-  "https://picsum.photos/id/718/1920/1080",
-  "https://picsum.photos/id/878/1920/1080"
-];
-
 export const usePlayerStore = create<PlayerState>()(
   persist(
     (set, get) => ({
@@ -184,7 +165,7 @@ export const usePlayerStore = create<PlayerState>()(
       bossLevel: 1,
       lastEnergyUpdate: Date.now(),
       inventory: [],
-      gallery: DEFAULT_IMAGES,
+      gallery: DEFAULT_GALLERY_IMAGES,
       achievements: [],
       friends: [{ name: "ДанИИл", isAiEnabled: true }],
       groupChats: [],
@@ -203,8 +184,8 @@ export const usePlayerStore = create<PlayerState>()(
         musicVolume: 50,
         ttsEnabled: false,
       },
-      globalBackgroundUrl: null,
-      pageBackgrounds: {},
+      globalBackgroundUrl: DEFAULT_GLOBAL_BACKGROUND,
+      pageBackgrounds: DEFAULT_PAGE_BACKGROUNDS,
       videoCutscenes: {
         vertical: DEFAULT_VERTICAL_VIDEOS,
         horizontal: DEFAULT_HORIZONTAL_VIDEOS,

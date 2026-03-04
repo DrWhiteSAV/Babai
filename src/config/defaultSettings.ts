@@ -1,4 +1,39 @@
-export const SHOP_ITEMS = [
+import { ShopItem, StoreConfig } from "../store/playerStore";
+
+// Базовые настройки магазина и прокачки
+export const DEFAULT_STORE_CONFIG: StoreConfig = {
+  telekinesisBaseCost: 50,
+  telekinesisCostMultiplier: 2,
+  telekinesisRewardBonus: 1,
+  bossBaseCost: 500,
+  bossCostMultiplier: 5,
+  bossRewardBase: 25,
+  bossRewardMultiplier: 2,
+  energyRegenMinutes: 5,
+};
+
+// Базовые изображения для галереи
+export const DEFAULT_GALLERY_IMAGES = [
+  "https://images.unsplash.com/photo-1505635552518-3448ff116af3?q=80&w=1080&auto=format&fit=crop",
+  "https://i.ibb.co/BVgY7XrT/babai.png",
+  "https://picsum.photos/id/718/1920/1080",
+  "https://picsum.photos/id/878/1920/1080"
+];
+
+// Базовые вертикальные видео (для мобильных/шортсов)
+export const DEFAULT_VERTICAL_VIDEOS = [
+  "https://cdn.pixabay.com/video/2020/05/25/40130-424823521_large.mp4",
+  "https://cdn.pixabay.com/video/2023/10/22/186008-876824401_large.mp4"
+];
+
+// Базовые горизонтальные видео (для десктопа)
+export const DEFAULT_HORIZONTAL_VIDEOS = [
+  "https://cdn.pixabay.com/video/2022/11/01/137394-766524330_large.mp4",
+  "https://cdn.pixabay.com/video/2021/08/11/84687-587842605_large.mp4"
+];
+
+// Базовые товары за Страх
+export const DEFAULT_SHOP_ITEMS: ShopItem[] = [
   {
     id: "wig_1",
     name: 'Парик "Одуванчик"',
@@ -271,7 +306,8 @@ export const SHOP_ITEMS = [
   },
 ];
 
-export const BOSS_ITEMS = [
+// Базовые товары за Арбузы (для боссов)
+export const DEFAULT_BOSS_ITEMS: ShopItem[] = [
   {
     id: "pajama_home",
     name: "Домашняя пижама",
@@ -327,3 +363,9 @@ export const BOSS_ITEMS = [
     description: "Молниеносный удар. Четверной урон превращает битвы с боссами в легкую прогулку.",
   },
 ];
+
+// Базовые фоны страниц (пусто по умолчанию)
+export const DEFAULT_PAGE_BACKGROUNDS: Record<string, { url: string; dimming: number }> = {};
+
+// Базовый глобальный фон (пусто по умолчанию)
+export const DEFAULT_GLOBAL_BACKGROUND: string | null = null;

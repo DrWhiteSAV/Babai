@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { usePlayerStore, DEFAULT_IMAGES } from "../store/playerStore";
+import { usePlayerStore } from "../store/playerStore";
 import { motion } from "motion/react";
 import { User, ArrowLeft, Copy, Share2, Trophy, Camera, BookOpen, Loader2, Image as ImageIcon, Volume2, VolumeX, X, ShieldAlert } from "lucide-react";
 import * as htmlToImage from 'html-to-image';
