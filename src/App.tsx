@@ -119,7 +119,7 @@ function AppContent() {
     "Tektur": "font-tektur",
   };
 
-  const fontClass = fontFamilyMap[settings.fontFamily] || "font-inter";
+  const fontClass = fontFamilyMap[settings.fontFamily] || "font-jetbrains";
   const themeClass = settings.theme === "cyberpunk" ? "theme-cyberpunk" : "";
 
   const buttonSizeClass = 

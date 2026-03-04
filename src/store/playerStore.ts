@@ -144,7 +144,7 @@ export const usePlayerStore = create<PlayerState>()(
       ],
       settings: {
         buttonSize: "medium",
-        fontFamily: "Inter",
+        fontFamily: "JetBrains Mono",
         fontSize: 16,
         fontBrightness: 100,
         theme: "normal",
@@ -210,6 +210,8 @@ export const usePlayerStore = create<PlayerState>()(
           // If theme changed to cyberpunk, force font to Tektur
           if (newSettings.theme === "cyberpunk" && state.settings.theme !== "cyberpunk") {
             updated.fontFamily = "Tektur";
+          } else if (newSettings.theme === "normal" && state.settings.theme !== "normal") {
+            updated.fontFamily = "JetBrains Mono";
           }
           return { settings: updated };
         }),

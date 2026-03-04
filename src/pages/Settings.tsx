@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { usePlayerStore, ButtonSize, FontFamily, Theme } from "../store/playerStore";
 import { motion } from "motion/react";
 import {
@@ -15,10 +15,7 @@ import Header from "../components/Header";
 
 export default function Settings() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { settings, updateSettings, character, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
-  const activeBgUrl = pageBackgrounds?.[location.pathname]?.url || globalBackgroundUrl;
-  const activeDimming = pageBackgrounds?.[location.pathname]?.dimming ?? 80;
+  const { settings, updateSettings, character } = usePlayerStore();
 
   if (!character) {
     navigate("/");
@@ -50,14 +47,8 @@ export default function Settings() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="flex-1 flex flex-col bg-neutral-950/80 text-neutral-200 relative overflow-hidden"
+      className="flex-1 flex flex-col bg-transparent text-white relative overflow-hidden"
     >
-      {activeBgUrl && (
-        <div 
-          className="absolute inset-0 bg-cover bg-center pointer-events-none mix-blend-overlay" 
-          style={{ backgroundImage: `url(${activeBgUrl})`, opacity: 1 - (activeDimming / 100) }}
-        />
-      )}
       <div className="fog-container">
         <div className="fog-layer"></div>
         <div className="fog-layer-2"></div>
@@ -79,7 +70,7 @@ export default function Settings() {
               <button
                 key={size}
                 onClick={() => handleButtonSizeChange(size)}
-                className={`p-3 rounded-xl border font-medium transition-all ${settings.buttonSize === size ? "border-red-600 bg-red-900/30 text-white" : "border-neutral-800 bg-neutral-900 text-neutral-400 hover:bg-neutral-800"}`}
+                className={`p-3 rounded-xl border font-medium transition-all ${settings.buttonSize === size ? "border-red-600 bg-red-900/30 text-white" : "border-neutral-800 bg-neutral-900/50 backdrop-blur-sm text-white hover:bg-neutral-800"}`}
               >
                 {size === "small"
                   ? "Мелкие"
@@ -101,7 +92,7 @@ export default function Settings() {
               <button
                 key={theme}
                 onClick={() => handleThemeChange(theme)}
-                className={`p-3 rounded-xl border font-bold transition-all uppercase tracking-wider ${settings.theme === theme ? "border-red-600 bg-red-900/30 text-white" : "border-neutral-800 bg-neutral-900 text-neutral-400 hover:bg-neutral-800"}`}
+                className={`p-3 rounded-xl border font-bold transition-all uppercase tracking-wider ${settings.theme === theme ? "border-red-600 bg-red-900/30 text-white" : "border-neutral-800 bg-neutral-900/50 backdrop-blur-sm text-white hover:bg-neutral-800"}`}
               >
                 {theme === "normal" ? "Обычная" : "Киберпанк"}
               </button>
@@ -114,12 +105,12 @@ export default function Settings() {
           <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2 flex items-center gap-2">
             <Type size={18} /> Стиль шрифта
           </h2>
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4">
+          <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-2xl p-4">
             <select
               id="fontFamily"
-              value={settings.fontFamily ?? "Inter"}
+              value={settings.fontFamily ?? "JetBrains Mono"}
               onChange={handleFontFamilyChange}
-              className="w-full bg-neutral-800 text-white border border-neutral-700 rounded-xl p-3 outline-none focus:border-red-500 transition-colors"
+              className="w-full bg-neutral-800/50 text-white border border-neutral-700 rounded-xl p-3 outline-none focus:border-red-500 transition-colors"
             >
               <option value="Inter" className="font-sans">Обычный (Inter)</option>
               <option value="Roboto" style={{ fontFamily: "'Roboto', sans-serif" }}>Робото (Roboto)</option>
@@ -143,7 +134,7 @@ export default function Settings() {
           <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2 flex items-center gap-2">
             <Type size={18} /> Размер шрифта: {settings.fontSize}px
           </h2>
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+          <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-2xl p-6">
             <input
               id="fontSize"
               type="range"
@@ -153,7 +144,7 @@ export default function Settings() {
               onChange={handleFontSizeChange}
               className="w-full accent-red-600 h-2 bg-neutral-800 rounded-lg appearance-none cursor-pointer"
             />
-            <div className="flex justify-between text-xs text-neutral-500 mt-4 font-mono">
+            <div className="flex justify-between text-xs text-white mt-4 font-mono">
               <span>5px</span>
               <span>24px</span>
             </div>
@@ -165,7 +156,7 @@ export default function Settings() {
           <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2 flex items-center gap-2">
             <Type size={18} /> Яркость шрифта: {settings.fontBrightness}%
           </h2>
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+          <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-2xl p-6">
             <input
               id="fontBrightness"
               type="range"
@@ -175,7 +166,7 @@ export default function Settings() {
               onChange={(e) => updateSettings({ fontBrightness: parseInt(e.target.value, 10) })}
               className="w-full accent-red-600 h-2 bg-neutral-800 rounded-lg appearance-none cursor-pointer"
             />
-            <div className="flex justify-between text-xs text-neutral-500 mt-4 font-mono">
+            <div className="flex justify-between text-xs text-white mt-4 font-mono">
               <span>0%</span>
               <span>100%</span>
             </div>
@@ -189,7 +180,7 @@ export default function Settings() {
           </h2>
           <button
             onClick={() => updateSettings({ ttsEnabled: !settings.ttsEnabled })}
-            className={`w-full p-4 rounded-xl border font-bold transition-all flex items-center justify-center gap-2 ${settings.ttsEnabled ? "border-green-600 bg-green-900/30 text-green-400" : "border-neutral-800 bg-neutral-900 text-neutral-500"}`}
+            className={`w-full p-4 rounded-xl border font-bold transition-all flex items-center justify-center gap-2 ${settings.ttsEnabled ? "border-green-600 bg-green-900/30 text-green-400" : "border-neutral-800 bg-neutral-900/50 backdrop-blur-sm text-white"}`}
           >
             {settings.ttsEnabled ? "ВКЛЮЧЕНА" : "ВЫКЛЮЧЕНА"}
           </button>
@@ -200,7 +191,7 @@ export default function Settings() {
           <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2 flex items-center gap-2">
             <Volume2 size={18} /> Громкость музыки
           </h2>
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+          <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-2xl p-6">
             <input
               id="musicVolume"
               type="range"
@@ -210,7 +201,7 @@ export default function Settings() {
               onChange={handleVolumeChange}
               className="w-full h-2 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-red-600"
             />
-            <div className="flex justify-between text-xs text-neutral-500 mt-4">
+            <div className="flex justify-between text-xs text-white mt-4">
               <span>0%</span>
               <span className="text-white font-bold">
                 {settings.musicVolume}%
@@ -229,7 +220,7 @@ export default function Settings() {
                 alert("Галерея очищена.");
               }
             }}
-            className="w-full py-3 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 border border-neutral-800 rounded-xl font-bold transition-colors text-sm"
+            className="w-full py-3 bg-neutral-900/50 backdrop-blur-sm hover:bg-neutral-800 text-white border border-neutral-800 rounded-xl font-bold transition-colors text-sm"
           >
             ОЧИСТИТЬ ГАЛЕРЕЮ
           </button>
@@ -245,7 +236,7 @@ export default function Settings() {
                 window.location.href = "/";
               }
             }}
-            className="w-full py-4 bg-neutral-900 hover:bg-red-900/20 text-red-500 border border-red-900/30 rounded-xl font-bold transition-colors"
+            className="w-full py-4 bg-neutral-900/50 backdrop-blur-sm hover:bg-red-900/20 text-red-500 border border-red-900/30 rounded-xl font-bold transition-colors"
           >
             СБРОСИТЬ ПРОГРЕСС
           </button>
