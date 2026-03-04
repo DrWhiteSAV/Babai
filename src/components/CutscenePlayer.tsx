@@ -110,11 +110,11 @@ export const CutscenePlayer: React.FC<CutscenePlayerProps> = ({ onComplete }) =>
         <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-neutral-950 overflow-hidden">
           {/* Fog Background */}
           <div 
-            className="absolute top-0 left-0 w-[200%] h-full opacity-30 animate-fog pointer-events-none"
+            className="absolute inset-0 w-full h-full opacity-30 animate-zoom-pulse pointer-events-none origin-center"
             style={{
               backgroundImage: 'url("https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?q=80&w=2000&auto=format&fit=crop")',
-              backgroundSize: '50% 100%',
-              backgroundRepeat: 'repeat-x',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
               filter: 'grayscale(100%) contrast(150%) brightness(0.5)',
             }}
           />
@@ -149,11 +149,11 @@ export const CutscenePlayer: React.FC<CutscenePlayerProps> = ({ onComplete }) =>
         <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-black/60 overflow-hidden">
           {/* Fog Background */}
           <div 
-            className="absolute top-0 left-0 w-[200%] h-full opacity-30 animate-fog pointer-events-none"
+            className="absolute inset-0 w-full h-full opacity-30 animate-zoom-pulse pointer-events-none origin-center"
             style={{
               backgroundImage: 'url("https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?q=80&w=2000&auto=format&fit=crop")',
-              backgroundSize: '50% 100%',
-              backgroundRepeat: 'repeat-x',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
               filter: 'grayscale(100%) contrast(150%) brightness(0.5)',
             }}
           />
