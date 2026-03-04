@@ -68,7 +68,7 @@ export default function AdminPic() {
       <div className="p-4 md:p-6 max-w-4xl mx-auto w-full pb-24">
         <div className="flex items-center gap-4 mb-8">
           <button 
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/admin")}
             className="p-2 bg-neutral-900 rounded-xl hover:bg-neutral-800 transition-colors"
           >
             <ArrowLeft className="w-6 h-6" />

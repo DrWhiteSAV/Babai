@@ -24,6 +24,9 @@ import Chat from "./pages/Chat";
 import Gallery from "./pages/Gallery";
 import Leaderboard from "./pages/Leaderboard";
 import Events from "./pages/Events";
+import Admin from "./pages/Admin";
+import AdminPic from "./pages/AdminPic";
+import AdminVideo from "./pages/AdminVideo";
 
 function AppContent() {
   const [hasSeenInitialCutscene, setHasSeenInitialCutscene] = useState(false);
@@ -169,6 +172,9 @@ function AppContent() {
           <Route path="/chat" element={<Chat />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/pic" element={<AdminPic />} />
+          <Route path="/admin/video" element={<AdminVideo />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <BottomNav />

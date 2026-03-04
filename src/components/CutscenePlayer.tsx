@@ -1,17 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SkipForward, Play } from 'lucide-react';
-
-const VERTICAL_VIDEOS = [
-  "https://file.pro-talk.ru/tgf/GgMpJwQ9JCkYKglyGHQJA1MwGk8dSD8EADEtA1oKbAgTQmltKQJLGAUdNjsZIj8MBBshDW0RIHw0bH5UVGgvEAoqN2QqJTkmVVpuYlYEbAV1VAgQCjEWKxseGVMpKyRYNBcXUm4FNwJgOi4UAQ4SOS4tKzsGCyUuTwJgBHdVAGB-S3U.mp4",
-  "https://file.pro-talk.ru/tgf/GgMpJwQ9JCkYKglyGHQJOVMwGk0NNzElHCoCPCQxaisjYTtydQphKSwbNjsZPAUMBBshDW0RIHw4cB9MZmAHFQI8P2QqJTkmVVpuYlYEbAV1VAgQCjEWKxseGVMpKyRYNBcXUm4FNwJgOi4UAQ4SOS4tKzsGCyUuTwJgBHdVAGB-S3U.mp4",
-  "https://file.pro-talk.ru/tgf/GgMpJwQ9JCkYKglyGHQJNFMwGkoKO2EHIh4pLTskEzE9AC5-HAp-Bho_KjsZP0UMBBshDW0RIHxuaigVXSIEGi5XL2QqJTkmVVpuYlYEbAV1VAgQCjEWKxseGVMpKyRYNBcXUm4FNwJgOi4UAQ4SOS4tKzsGCyUuTwJgBHdVAGB-S3U.mp4"
-];
-
-const HORIZONTAL_VIDEOS = [
-  "https://file.pro-talk.ru/tgf/GgMpJwQ9JCkYKglyGHQJN1MwGko3CAk2NyZxKSxdPDhWBnRNHzhZAjIYcTsZPCcMBBshDW0RIHwsWgc2ZQcjFnwpN2QqJTkmVVpuYlYEbAV1VAgQCjEWKxseGVMpKyRYNBcXUm4FNwJgOi4UAQ4SOS4tKzsGCyUuTwJgBHdVAGB-S3U.mp4",
-  "https://file.pro-talk.ru/tgf/GgMpJwQ9JCkYKglyGHQJNVMwGks_KD88ARwSLzkOEmQKXz1Za1lYZwktNjsZP1oMBBshDW0RIHw8GDMABx8-MC4IK2QqJTkmVVpuYlYEbAV1VAgQCjEWKxseGVMpKyRYNBcXUm4FNwJgOi4UAQ4SOS4tKzsGCyUuTwJgBHdVAGB-S3U.mp4",
-  "https://file.pro-talk.ru/tgf/GgMpJwQ9JCkYKglyGHQJMFMwGksdCTYhClwfCBoQCWQ6UxdkFgBDGWZOLjsZPwUMBBshDW0RIHwDbDM4aAsmLHMSN2QqJTkmVVpuYlYEbAV1VAgQCjEWKxseGVMpKyRYNBcXUm4FNwJgOi4UAQ4SOS4tKzsGCyUuTwJgBHdVAGB-S3U.mp4"
-];
+import { usePlayerStore } from '../store/playerStore';
 
 interface CutscenePlayerProps {
   onComplete: () => void;
@@ -46,6 +35,7 @@ const GameDescription = () => (
 );
 
 export const CutscenePlayer: React.FC<CutscenePlayerProps> = ({ onComplete }) => {
+  const { videoCutscenes } = usePlayerStore();
   const [videoUrl, setVideoUrl] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [needsInteraction, setNeedsInteraction] = useState(false);
@@ -53,10 +43,16 @@ export const CutscenePlayer: React.FC<CutscenePlayerProps> = ({ onComplete }) =>
 
   useEffect(() => {
     const isPortrait = window.innerHeight > window.innerWidth;
-    const videos = isPortrait ? VERTICAL_VIDEOS : HORIZONTAL_VIDEOS;
-    const randomVideo = videos[Math.floor(Math.random() * videos.length)];
-    setVideoUrl(randomVideo);
-  }, []);
+    const videos = isPortrait ? videoCutscenes.vertical : videoCutscenes.horizontal;
+    
+    if (videos && videos.length > 0) {
+      const randomVideo = videos[Math.floor(Math.random() * videos.length)];
+      setVideoUrl(randomVideo);
+    } else {
+      // Fallback if no videos are configured
+      onComplete();
+    }
+  }, [videoCutscenes, onComplete]);
 
   useEffect(() => {
     // Fallback: if video doesn't trigger onCanPlay within 2 seconds (e.g. due to mobile data saving or autoplay blocking),

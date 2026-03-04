@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { usePlayerStore, DEFAULT_IMAGES } from "../store/playerStore";
 import { motion } from "motion/react";
-import { User, ArrowLeft, Copy, Share2, Trophy, Camera, BookOpen, Loader2, Image as ImageIcon, Volume2, VolumeX, X } from "lucide-react";
+import { User, ArrowLeft, Copy, Share2, Trophy, Camera, BookOpen, Loader2, Image as ImageIcon, Volume2, VolumeX, X, ShieldAlert } from "lucide-react";
 import * as htmlToImage from 'html-to-image';
 import { generateLore } from "../services/geminiService";
 import CurrencyModal, { CurrencyType } from "../components/CurrencyModal";
@@ -86,6 +86,15 @@ export default function Profile() {
         onInfoClick={(type, e) => setInfoModal(type)}
         rightContent={
           <div className="flex gap-4">
+            <div
+              role="button"
+              onClick={() => navigate("/admin")}
+              className="p-2 cursor-pointer hover:bg-neutral-800 rounded-full transition-colors text-red-500"
+              title="Админ-панель"
+              style={{ clipPath: 'none' }}
+            >
+              <ShieldAlert size={20} />
+            </div>
             <div
               role="button"
               onClick={() => updateSettings({ ttsEnabled: !settings.ttsEnabled })}

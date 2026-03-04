@@ -61,6 +61,16 @@ export interface Quest {
   target: number;
 }
 
+export const DEFAULT_VERTICAL_VIDEOS = [
+  "https://cdn.pixabay.com/video/2020/05/25/40130-424823521_large.mp4",
+  "https://cdn.pixabay.com/video/2023/10/22/186008-876824401_large.mp4"
+];
+
+export const DEFAULT_HORIZONTAL_VIDEOS = [
+  "https://cdn.pixabay.com/video/2022/11/01/137394-766524330_large.mp4",
+  "https://cdn.pixabay.com/video/2021/08/11/84687-587842605_large.mp4"
+];
+
 export interface PlayerState {
   character: Character | null;
   fear: number;
@@ -85,6 +95,10 @@ export interface PlayerState {
   };
   globalBackgroundUrl: string | null;
   pageBackgrounds: Record<string, { url: string; dimming: number }>;
+  videoCutscenes: {
+    vertical: string[];
+    horizontal: string[];
+  };
   setCharacter: (char: Character) => void;
   updateCharacter: (updates: Partial<Character>) => void;
   addFear: (amount: number) => void;
@@ -111,6 +125,7 @@ export interface PlayerState {
   deleteGroupChat: (id: string) => void;
   completeQuest: (id: string) => void;
   updateQuestProgress: (id: string, amount: number) => void;
+  setVideoCutscenes: (vertical: string[], horizontal: string[]) => void;
 }
 
 export const ENERGY_REGEN_RATE = 5 * 60 * 1000; // 5 minutes in ms
@@ -153,6 +168,10 @@ export const usePlayerStore = create<PlayerState>()(
       },
       globalBackgroundUrl: null,
       pageBackgrounds: {},
+      videoCutscenes: {
+        vertical: DEFAULT_VERTICAL_VIDEOS,
+        horizontal: DEFAULT_HORIZONTAL_VIDEOS,
+      },
       setCharacter: (char) => {
         const { addToGallery } = get();
         set({ character: char });
@@ -222,6 +241,9 @@ export const usePlayerStore = create<PlayerState>()(
           [page]: { url, dimming }
         }
       })),
+      setVideoCutscenes: (vertical, horizontal) => set({
+        videoCutscenes: { vertical, horizontal }
+      }),
       buyItem: (item, cost, currency = 'fear') => {
         const { fear, watermelons, inventory } = get();
         if (inventory.includes(item)) return false;
