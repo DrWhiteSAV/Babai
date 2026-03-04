@@ -27,6 +27,7 @@ import Events from "./pages/Events";
 import Admin from "./pages/Admin";
 import AdminPic from "./pages/AdminPic";
 import AdminVideo from "./pages/AdminVideo";
+import AdminStore from "./pages/AdminStore";
 
 function AppContent() {
   const [hasSeenInitialCutscene, setHasSeenInitialCutscene] = useState(false);
@@ -175,6 +176,7 @@ function AppContent() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/pic" element={<AdminPic />} />
           <Route path="/admin/video" element={<AdminVideo />} />
+          <Route path="/admin/store" element={<AdminStore />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <BottomNav />

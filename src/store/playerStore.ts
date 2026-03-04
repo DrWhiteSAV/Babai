@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { SHOP_ITEMS as DEFAULT_SHOP_ITEMS, BOSS_ITEMS as DEFAULT_BOSS_ITEMS } from "../data/items";
 
 export type Gender = "Бабай" | "Бабайка";
 export type Style =
@@ -61,6 +62,27 @@ export interface Quest {
   target: number;
 }
 
+export interface ShopItem {
+  id: string;
+  name: string;
+  type: string;
+  cost: number;
+  currency: string;
+  icon: string;
+  description: string;
+}
+
+export interface StoreConfig {
+  telekinesisBaseCost: number;
+  telekinesisCostMultiplier: number;
+  telekinesisRewardBonus: number;
+  bossBaseCost: number;
+  bossCostMultiplier: number;
+  bossRewardBase: number;
+  bossRewardMultiplier: number;
+  energyRegenMinutes: number;
+}
+
 export const DEFAULT_VERTICAL_VIDEOS = [
   "https://cdn.pixabay.com/video/2020/05/25/40130-424823521_large.mp4",
   "https://cdn.pixabay.com/video/2023/10/22/186008-876824401_large.mp4"
@@ -99,6 +121,9 @@ export interface PlayerState {
     vertical: string[];
     horizontal: string[];
   };
+  shopItems: ShopItem[];
+  bossItems: ShopItem[];
+  storeConfig: StoreConfig;
   setCharacter: (char: Character) => void;
   updateCharacter: (updates: Partial<Character>) => void;
   addFear: (amount: number) => void;
@@ -126,9 +151,21 @@ export interface PlayerState {
   completeQuest: (id: string) => void;
   updateQuestProgress: (id: string, amount: number) => void;
   setVideoCutscenes: (vertical: string[], horizontal: string[]) => void;
+  updateStoreConfig: (config: Partial<StoreConfig>) => void;
+  updateShopItem: (id: string, updates: Partial<ShopItem>) => void;
+  updateBossItem: (id: string, updates: Partial<ShopItem>) => void;
 }
 
-export const ENERGY_REGEN_RATE = 5 * 60 * 1000; // 5 minutes in ms
+export const DEFAULT_STORE_CONFIG: StoreConfig = {
+  telekinesisBaseCost: 50,
+  telekinesisCostMultiplier: 2,
+  telekinesisRewardBonus: 1,
+  bossBaseCost: 500,
+  bossCostMultiplier: 5,
+  bossRewardBase: 25,
+  bossRewardMultiplier: 2,
+  energyRegenMinutes: 5,
+};
 
 export const DEFAULT_IMAGES = [
   "https://images.unsplash.com/photo-1505635552518-3448ff116af3?q=80&w=1080&auto=format&fit=crop",
@@ -172,6 +209,9 @@ export const usePlayerStore = create<PlayerState>()(
         vertical: DEFAULT_VERTICAL_VIDEOS,
         horizontal: DEFAULT_HORIZONTAL_VIDEOS,
       },
+      shopItems: DEFAULT_SHOP_ITEMS,
+      bossItems: DEFAULT_BOSS_ITEMS,
+      storeConfig: DEFAULT_STORE_CONFIG,
       setCharacter: (char) => {
         const { addToGallery } = get();
         set({ character: char });
@@ -211,15 +251,16 @@ export const usePlayerStore = create<PlayerState>()(
         return false;
       },
       updateEnergy: () => {
-        const { energy, lastEnergyUpdate } = get();
+        const { energy, lastEnergyUpdate, storeConfig } = get();
         const now = Date.now();
         const diff = now - lastEnergyUpdate;
-        const energyToAdd = Math.floor(diff / ENERGY_REGEN_RATE);
+        const regenRateMs = (storeConfig?.energyRegenMinutes || 5) * 60 * 1000;
+        const energyToAdd = Math.floor(diff / regenRateMs);
 
         if (energyToAdd > 0) {
           set({
             energy: energy + energyToAdd,
-            lastEnergyUpdate: now - (diff % ENERGY_REGEN_RATE),
+            lastEnergyUpdate: now - (diff % regenRateMs),
           });
         }
       },
@@ -244,6 +285,15 @@ export const usePlayerStore = create<PlayerState>()(
       setVideoCutscenes: (vertical, horizontal) => set({
         videoCutscenes: { vertical, horizontal }
       }),
+      updateStoreConfig: (config) => set((state) => ({
+        storeConfig: { ...state.storeConfig, ...config }
+      })),
+      updateShopItem: (id, updates) => set((state) => ({
+        shopItems: state.shopItems.map(item => item.id === id ? { ...item, ...updates } : item)
+      })),
+      updateBossItem: (id, updates) => set((state) => ({
+        bossItems: state.bossItems.map(item => item.id === id ? { ...item, ...updates } : item)
+      })),
       buyItem: (item, cost, currency = 'fear') => {
         const { fear, watermelons, inventory } = get();
         if (inventory.includes(item)) return false;

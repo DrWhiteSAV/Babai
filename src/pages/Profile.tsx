@@ -6,14 +6,13 @@ import { User, ArrowLeft, Copy, Share2, Trophy, Camera, BookOpen, Loader2, Image
 import * as htmlToImage from 'html-to-image';
 import { generateLore } from "../services/geminiService";
 import CurrencyModal, { CurrencyType } from "../components/CurrencyModal";
-import { SHOP_ITEMS, BOSS_ITEMS } from "../data/items";
 import Header from "../components/Header";
 import { transliterate } from "../utils/transliterate";
 
 export default function Profile() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { character, fear, energy, watermelons, inventory, updateCharacter, gallery, addToGallery, settings, updateSettings, globalBackgroundUrl, pageBackgrounds } = usePlayerStore();
+  const { character, fear, energy, watermelons, inventory, updateCharacter, gallery, addToGallery, settings, updateSettings, globalBackgroundUrl, pageBackgrounds, shopItems, bossItems } = usePlayerStore();
       const profileRef = useRef<HTMLDivElement>(null);
   const [isGeneratingLore, setIsGeneratingLore] = useState(false);
   const [infoModal, setInfoModal] = useState<CurrencyType>(null);
@@ -249,10 +248,10 @@ export default function Profile() {
         {/* Inventory */}
         <section>
           <h3 className="text-lg font-bold text-white mb-4 uppercase tracking-wider border-b border-neutral-800 pb-2 flex items-center gap-2">
-            <Trophy size={18} /> Инвентарь ({inventory.length}/{SHOP_ITEMS.length + BOSS_ITEMS.length})
+            <Trophy size={18} /> Инвентарь ({inventory.length}/{shopItems.length + bossItems.length})
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {[...SHOP_ITEMS, ...BOSS_ITEMS].map((item, i) => {
+            {[...shopItems, ...bossItems].map((item, i) => {
               const isOwned = inventory.includes(item.id);
               return (
                 <motion.div

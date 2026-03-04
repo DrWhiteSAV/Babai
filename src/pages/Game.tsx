@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { usePlayerStore, ENERGY_REGEN_RATE } from "../store/playerStore";
+import { usePlayerStore } from "../store/playerStore";
 import {
   generateScenario,
   generateFriendChat,
@@ -34,7 +34,7 @@ interface Scenario {
 export default function Game() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { character, fear, energy, useEnergy, addFear, settings, gallery, addToGallery, addWatermelons, inventory, watermelons, lastEnergyUpdate, bossLevel, globalBackgroundUrl, pageBackgrounds } =
+  const { character, fear, energy, useEnergy, addFear, settings, gallery, addToGallery, addWatermelons, inventory, watermelons, lastEnergyUpdate, bossLevel, globalBackgroundUrl, pageBackgrounds, storeConfig } =
     usePlayerStore();
     
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
@@ -54,7 +54,8 @@ export default function Game() {
     const calculateTimeLeft = () => {
       const now = Date.now();
       const diff = now - lastEnergyUpdate;
-      const remaining = ENERGY_REGEN_RATE - (diff % ENERGY_REGEN_RATE);
+      const regenRateMs = storeConfig.energyRegenMinutes * 60 * 1000;
+      const remaining = regenRateMs - (diff % regenRateMs);
       setTimeLeft(Math.floor(remaining / 1000));
     };
 
@@ -264,7 +265,7 @@ export default function Game() {
     setResultText(isCorrect ? scenario.successText : scenario.failureText);
 
     if (isCorrect) {
-      const fearReward = 1 + (character ? character.telekinesisLevel - 1 : 0);
+      const fearReward = 1 + (character ? (character.telekinesisLevel - 1) * storeConfig.telekinesisRewardBonus : 0);
       if (pvpParticipants.length > 0) {
         setLocalFear(f => f + fearReward);
       } else {
@@ -301,7 +302,7 @@ export default function Game() {
     setBossTaps(newTaps);
     
     const maxHp = 100 * Math.pow(2, bossLevel - 1);
-    const reward = 25 * Math.pow(2, bossLevel - 1);
+    const reward = storeConfig.bossRewardBase * Math.pow(storeConfig.bossRewardMultiplier, bossLevel - 1);
 
     if (newTaps >= maxHp) {
       setIsBossDefeated(true);
@@ -784,7 +785,7 @@ export default function Game() {
 
               {isBossDefeated ? (
                 <div className="mt-8 text-center space-y-4">
-                  <p className="text-green-400 font-bold">Вы одолели босса и получили {25 * Math.pow(2, bossLevel - 1)} кг арбуза!</p>
+                  <p className="text-green-400 font-bold">Вы одолели босса и получили {storeConfig.bossRewardBase * Math.pow(storeConfig.bossRewardMultiplier, bossLevel - 1)} кг арбуза!</p>
                   <button
                     onClick={() => {
                       setIsBossBattle(false);

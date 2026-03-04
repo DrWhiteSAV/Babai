@@ -6,12 +6,11 @@ import { ShoppingCart, ArrowLeft, Skull, Zap, Loader2, X, Sparkles } from "lucid
 import { editAvatarWithItem } from "../services/geminiService";
 import CurrencyModal, { CurrencyType } from "../components/CurrencyModal";
 import Header from "../components/Header";
-import { SHOP_ITEMS, BOSS_ITEMS } from "../data/items";
 
 export default function Shop() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { fear, watermelons, inventory, buyItem, upgradeTelekinesis, upgradeBossLevel, bossLevel, character, updateCharacter, addToGallery, settings } =
+  const { fear, watermelons, inventory, buyItem, upgradeTelekinesis, upgradeBossLevel, bossLevel, character, updateCharacter, addToGallery, settings, shopItems, bossItems, storeConfig } =
     usePlayerStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [infoModal, setInfoModal] = useState<{type: CurrencyType, y: number} | null>(null);
@@ -56,7 +55,7 @@ export default function Shop() {
 
       // Edit avatar
       const allOwnedItems = [...inventory, item.id]
-        .map(id => [...SHOP_ITEMS, ...BOSS_ITEMS].find(i => i.id === id)?.name)
+        .map(id => [...shopItems, ...bossItems].find(i => i.id === id)?.name)
         .filter(Boolean) as string[];
       
       const newAvatar = await editAvatarWithItem(character.avatarUrl, character, allOwnedItems, item.name);
@@ -68,7 +67,7 @@ export default function Shop() {
 
   const handleUpgrade = (e: React.MouseEvent) => {
     if (!character) return;
-    const cost = 50 * Math.pow(2, character.telekinesisLevel - 1);
+    const cost = storeConfig.telekinesisBaseCost * Math.pow(storeConfig.telekinesisCostMultiplier, character.telekinesisLevel - 1);
     if (fear < cost) {
       setWarningModal({ 
         item: { name: "Телекинез", currency: "fear" }, 
@@ -85,7 +84,7 @@ export default function Shop() {
   };
 
   const handleUpgradeBoss = (e: React.MouseEvent) => {
-    const cost = 500 * Math.pow(5, bossLevel - 1);
+    const cost = storeConfig.bossBaseCost * Math.pow(storeConfig.bossCostMultiplier, bossLevel - 1);
     if (watermelons < cost) {
       setWarningModal({ 
         item: { name: "Усиление Босса", currency: "watermelons" }, 
@@ -142,8 +141,8 @@ export default function Shop() {
                   name: "Телекинез",
                   type: "Способность",
                   icon: "🧠",
-                  description: `Увеличивает количество получаемого страха за правильные ответы. Текущий бонус: +${character ? character.telekinesisLevel - 1 : 0} страха.`,
-                  cost: 50 * Math.pow(2, (character?.telekinesisLevel || 1) - 1),
+                  description: `Увеличивает количество получаемого страха за правильные ответы. Текущий бонус: +${character ? (character.telekinesisLevel - 1) * storeConfig.telekinesisRewardBonus : 0} страха.`,
+                  cost: storeConfig.telekinesisBaseCost * Math.pow(storeConfig.telekinesisCostMultiplier, (character?.telekinesisLevel || 1) - 1),
                   currency: "fear",
                   isUpgrade: true,
                   action: handleUpgrade
@@ -167,7 +166,7 @@ export default function Shop() {
                 className={`w-full py-2 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-1 relative overflow-hidden ${
                   successEffect === "telekinesis" 
                     ? "bg-green-500 text-white border-green-400 scale-105 shadow-[0_0_20px_rgba(34,197,94,0.6)]"
-                    : character && fear >= 50 * Math.pow(2, character.telekinesisLevel - 1)
+                    : character && fear >= storeConfig.telekinesisBaseCost * Math.pow(storeConfig.telekinesisCostMultiplier, character.telekinesisLevel - 1)
                     ? "bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50"
                     : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
                 }`}
@@ -182,7 +181,7 @@ export default function Shop() {
                   </motion.div>
                 )}
                 <Skull size={14} />{" "}
-                {character ? 50 * Math.pow(2, character.telekinesisLevel - 1) : 0}
+                {character ? storeConfig.telekinesisBaseCost * Math.pow(storeConfig.telekinesisCostMultiplier, character.telekinesisLevel - 1) : 0}
               </button>
             </div>
 
@@ -193,8 +192,8 @@ export default function Shop() {
                   name: "Усиление Босса",
                   type: "Улучшение",
                   icon: "👹",
-                  description: `Увеличивает здоровье босса и награду за его убийство. Текущая награда: ${25 * Math.pow(2, bossLevel - 1)} арбузов.`,
-                  cost: 500 * Math.pow(5, bossLevel - 1),
+                  description: `Увеличивает здоровье босса и награду за его убийство. Текущая награда: ${storeConfig.bossRewardBase * Math.pow(storeConfig.bossRewardMultiplier, bossLevel - 1)} арбузов.`,
+                  cost: storeConfig.bossBaseCost * Math.pow(storeConfig.bossCostMultiplier, bossLevel - 1),
                   currency: "watermelons",
                   isUpgrade: true,
                   action: handleUpgradeBoss
@@ -218,7 +217,7 @@ export default function Shop() {
                 className={`w-full py-2 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-1 relative overflow-hidden ${
                   successEffect === "boss_level"
                     ? "bg-green-500 text-white border-green-400 scale-105 shadow-[0_0_20px_rgba(34,197,94,0.6)]"
-                    : watermelons >= 500 * Math.pow(5, bossLevel - 1)
+                    : watermelons >= storeConfig.bossBaseCost * Math.pow(storeConfig.bossCostMultiplier, bossLevel - 1)
                     ? "bg-green-900/30 hover:bg-green-900/50 text-green-400 border border-green-900/50"
                     : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
                 }`}
@@ -232,7 +231,7 @@ export default function Shop() {
                     <Sparkles size={18} className="text-white" />
                   </motion.div>
                 )}
-                🍉 {500 * Math.pow(5, bossLevel - 1)}
+                🍉 {storeConfig.bossBaseCost * Math.pow(storeConfig.bossCostMultiplier, bossLevel - 1)}
               </button>
             </div>
           </div>
@@ -244,7 +243,7 @@ export default function Shop() {
             Товары за Страх
           </h2>
           <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
-            {SHOP_ITEMS.map((item) => {
+            {shopItems.map((item) => {
               const isOwned = inventory.includes(item.id);
               return (
                 <div
@@ -303,7 +302,7 @@ export default function Shop() {
             Экипировка для Боссов
           </h2>
           <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
-            {BOSS_ITEMS.map((item) => {
+            {bossItems.map((item) => {
               const isOwned = inventory.includes(item.id);
               return (
                 <div

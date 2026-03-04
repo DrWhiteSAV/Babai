@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../components/Header";
-import { usePlayerStore, ENERGY_REGEN_RATE } from "../store/playerStore";
+import { usePlayerStore } from "../store/playerStore";
 import { motion } from "motion/react";
 import {
   Play,

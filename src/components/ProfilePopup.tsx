@@ -1,7 +1,6 @@
 import { motion } from "motion/react";
 import { X } from "lucide-react";
 import { usePlayerStore } from "../store/playerStore";
-import { SHOP_ITEMS, BOSS_ITEMS } from "../data/items";
 
 interface ProfilePopupProps {
   name: string;
@@ -9,7 +8,7 @@ interface ProfilePopupProps {
 }
 
 export default function ProfilePopup({ name, onClose }: ProfilePopupProps) {
-  const { character, fear, energy, watermelons, bossLevel, inventory } = usePlayerStore();
+  const { character, fear, energy, watermelons, bossLevel, inventory, shopItems, bossItems } = usePlayerStore();
 
   const isUser = name === character?.name || name === "user";
   const displayName = isUser ? character?.name : name;
@@ -53,7 +52,7 @@ export default function ProfilePopup({ name, onClose }: ProfilePopupProps) {
     lore: character?.lore || "История умалчивает..."
   } : getMockData(name);
 
-  const allItems = [...SHOP_ITEMS, ...BOSS_ITEMS];
+  const allItems = [...shopItems, ...bossItems];
   const userItems = data.inventory?.map(id => allItems.find(i => i.id === id || i.name === id)).filter(Boolean) || [];
 
   return (

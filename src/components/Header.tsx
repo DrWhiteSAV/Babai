@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { usePlayerStore, ENERGY_REGEN_RATE } from "../store/playerStore";
+import { usePlayerStore } from "../store/playerStore";
 import { ArrowLeft, Skull, Zap } from "lucide-react";
 import { ReactNode, MouseEvent, useState, useEffect } from "react";
 
@@ -12,21 +12,22 @@ interface HeaderProps {
 
 export default function Header({ title, backUrl, onInfoClick, rightContent }: HeaderProps) {
   const navigate = useNavigate();
-  const { fear, watermelons, energy, lastEnergyUpdate } = usePlayerStore();
+  const { fear, watermelons, energy, lastEnergyUpdate, storeConfig } = usePlayerStore();
   const [timeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = Date.now();
       const diff = now - lastEnergyUpdate;
-      const remaining = ENERGY_REGEN_RATE - (diff % ENERGY_REGEN_RATE);
+      const regenRateMs = (storeConfig?.energyRegenMinutes || 5) * 60 * 1000;
+      const remaining = regenRateMs - (diff % regenRateMs);
       setTimeLeft(Math.floor(remaining / 1000));
     };
 
     calculateTimeLeft();
     const interval = setInterval(calculateTimeLeft, 1000);
     return () => clearInterval(interval);
-  }, [lastEnergyUpdate]);
+  }, [lastEnergyUpdate, storeConfig?.energyRegenMinutes]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
