@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { usePlayerStore } from "../store/playerStore";
 import { motion } from "motion/react";
 import { ArrowLeft, MessageSquare, Send, ImagePlus, X, Users, Settings, Reply } from "lucide-react";
-import { generateDanilChat } from "../services/ai";
+import { generateFriendChat } from "../services/ai";
 import ProfilePopup from "../components/ProfilePopup";
 
 interface Message {
@@ -82,7 +82,8 @@ export default function Chat() {
       setIsAiTyping(true);
       
       try {
-        const responseText = await generateDanilChat(userMessage, character?.style || "Обычная", imageToSend || undefined);
+        const recentMessages = messages.slice(-10).map(m => ({ sender: m.sender, text: m.text }));
+        const responseText = await generateFriendChat(userMessage, friend.name, character, character?.style || "Обычная", recentMessages, imageToSend || undefined);
         setMessages((prev) => [
           ...prev,
           { id: Date.now().toString(), sender: friend.name, text: responseText, replyTo: newMsg.id },
@@ -96,24 +97,46 @@ export default function Chat() {
         setIsAiTyping(false);
       }
     } else if (group) {
-      // Group chat logic - simulate random friend responding if any are AI, or if mentioned
+      // Group chat logic
       const aiMembers = group.members.filter(m => friends.find(f => f.name === m)?.isAiEnabled);
       const mentionedAIs = aiMembers.filter(m => userMessage.includes(`@${m}`));
       
-      const responders = mentionedAIs.length > 0 ? mentionedAIs : (aiMembers.length > 0 && Math.random() > 0.5 ? [aiMembers[Math.floor(Math.random() * aiMembers.length)]] : []);
+      // If a specific AI is mentioned, or if it's a reply to an AI's message
+      let responders = mentionedAIs;
+      
+      if (responders.length === 0 && currentReplyTo) {
+        const repliedMsg = messages.find(m => m.id === currentReplyTo);
+        if (repliedMsg && aiMembers.includes(repliedMsg.sender)) {
+          responders = [repliedMsg.sender];
+        }
+      }
+
+      // Randomly join conversation if not mentioned (low probability)
+      if (responders.length === 0 && aiMembers.length > 0 && Math.random() > 0.8) {
+        responders = [aiMembers[Math.floor(Math.random() * aiMembers.length)]];
+      }
 
       if (responders.length > 0) {
         setIsAiTyping(true);
-        setTimeout(() => {
-          const newResponses = responders.map((responder, idx) => ({
-            id: (Date.now() + idx).toString(),
-            sender: responder,
-            text: `(ИИ) ${mentionedAIs.includes(responder) ? 'Вы звали меня?' : 'Я согласен с тобой!'}`,
-            replyTo: newMsg.id
-          }));
-          setMessages((prev) => [...prev, ...newResponses]);
+        
+        // Process responses sequentially to avoid rate limits and keep conversation natural
+        const processResponses = async () => {
+          for (const responder of responders) {
+            try {
+              const recentMessages = messages.slice(-10).map(m => ({ sender: m.sender, text: m.text }));
+              const responseText = await generateFriendChat(userMessage, responder, character, character?.style || "Обычная", recentMessages, imageToSend || undefined);
+              setMessages((prev) => [
+                ...prev,
+                { id: Date.now().toString() + responder, sender: responder, text: responseText, replyTo: newMsg.id },
+              ]);
+            } catch (e) {
+              console.error("Group AI chat error:", e);
+            }
+          }
           setIsAiTyping(false);
-        }, 1500);
+        };
+        
+        processResponses();
       }
     }
   };

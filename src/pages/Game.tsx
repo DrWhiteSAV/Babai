@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { usePlayerStore, ENERGY_REGEN_RATE } from "../store/playerStore";
 import {
   generateScenario,
-  generateDanilChat,
+  generateFriendChat,
   generateBackgroundImage,
   generateSpookyVoice,
   generateBossImage,
@@ -322,7 +322,8 @@ export default function Game() {
     setChatInput("");
     setIsDanilTyping(true);
 
-    const danilReply = await generateDanilChat(userMsg, character.style);
+    const recentMessages = chatMessages.slice(-10);
+    const danilReply = await generateFriendChat(userMsg, "ДанИИл", character, character.style, recentMessages);
     setChatMessages((prev) => [...prev, { sender: "danil", text: danilReply }]);
     setIsDanilTyping(false);
 

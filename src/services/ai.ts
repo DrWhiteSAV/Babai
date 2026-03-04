@@ -205,9 +205,12 @@ export async function generateBossImage(
   }
 }
 
-export async function generateDanilChat(
+export async function generateFriendChat(
   message: string,
+  friendName: string,
+  character: any,
   style: string,
+  chatHistory: { sender: string, text: string }[] = [],
   imageUrl?: string
 ): Promise<string> {
   try {
@@ -223,13 +226,29 @@ export async function generateDanilChat(
       });
     }
     
-    parts.push({
-      text: `Ты - ДанИИл, дух-начальник (ИИ), который контролирует Бабаев. 
+    let historyText = "";
+    if (chatHistory.length > 0) {
+      historyText = `\nИстория последних сообщений:\n` + chatHistory.map(m => `${m.sender === 'user' ? (character?.name || 'Бабай') : m.sender}: ${m.text}`).join('\n') + `\n`;
+    }
+
+    let promptText = "";
+    if (friendName === "ДанИИл") {
+      promptText = `Ты - ДанИИл, дух-начальник (ИИ), который контролирует Бабаев. 
       Стиль общения: строгий, саркастичный, требует отчетов о выселении жильцов. Учитывай стиль мира: ${style}.
-      Игрок пишет тебе: "${message}".
+      Игрок (Бабай по имени ${character?.name || 'Неизвестный'}) пишет тебе: "${message}".${historyText}
       ${imageUrl ? "Игрок также прислал изображение. Прокомментируй его, если оно относится к делу." : ""}
-      Ответь коротко (1-2 предложения), оцени работу и дай добро на следующий этап, если игрок убедителен.`
-    });
+      Ответь коротко (1-2 предложения), оцени работу и дай добро на следующий этап, если игрок убедителен.`;
+    } else {
+      promptText = `Ты - ИИ-заместитель друга по имени ${friendName}. 
+      Твой собеседник - Бабай по имени ${character?.name || 'Неизвестный'} (описание: ${character?.description || 'нет описания'}).
+      Стиль мира: ${style}.
+      Веди себя как другой Бабай-коллега, который тоже пугает людей, но сейчас общается в чате.
+      Игрок пишет тебе: "${message}".${historyText}
+      ${imageUrl ? "Игрок также прислал изображение. Прокомментируй его." : ""}
+      Ответь коротко (1-3 предложения), поддерживая атмосферу мира Бабаев и характер собеседника.`;
+    }
+
+    parts.push({ text: promptText });
 
     const response = await withRetry(() => ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -237,14 +256,18 @@ export async function generateDanilChat(
     }));
     return response.text?.trim() || "Продолжай работать.";
   } catch (e) {
-    console.error("Danil chat error:", e);
-    const replies = [
-      "Слишком много разговоров, Бабай. Иди работай.",
-      "Твои отчеты полны ошибок. Исправь это на следующем этаже.",
-      "Я слежу за тобой. Не разочаруй систему.",
-      "Энергия не бесконечна. Поторопись с выселением."
-    ];
-    return replies[Math.floor(Math.random() * replies.length)];
+    console.error("Friend chat error:", e);
+    if (friendName === "ДанИИл") {
+      const replies = [
+        "Слишком много разговоров, Бабай. Иди работай.",
+        "Твои отчеты полны ошибок. Исправь это на следующем этаже.",
+        "Я слежу за тобой. Не разочаруй систему.",
+        "Энергия не бесконечна. Поторопись с выселением."
+      ];
+      return replies[Math.floor(Math.random() * replies.length)];
+    } else {
+      return "Связь прервалась. Попробуй позже.";
+    }
   }
 }
 

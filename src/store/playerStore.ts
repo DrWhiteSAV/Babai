@@ -281,7 +281,7 @@ export const usePlayerStore = create<PlayerState>()(
       addFriend: (name) => {
         const { friends } = get();
         if (!friends.find(f => f.name === name)) {
-          set({ friends: [...friends, { name, isAiEnabled: false }] });
+          set({ friends: [...friends, { name, isAiEnabled: name === "ДанИИл" }] });
         }
       },
       deleteFriend: (name) => {
